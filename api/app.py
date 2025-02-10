@@ -4,8 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
-from models import db, User, Course, Announcement, Week, Module, TestCase, Question, UserCourse
-import controllers  # Import the controllers
+from api.models import db, User, Course, Announcement, Week, Module, TestCase, Question, UserCourse
+import api.controllers  # Import the controllers
 from datetime import datetime
 
 # Initialize Flask app
@@ -108,4 +108,4 @@ def reset_and_seed_database():
 # Run the Flask app
 if __name__ == '__main__':
     reset_and_seed_database()  # Reset and populate DB every time the app runs
-    app.run(debug=True)
+    # app.run(debug=True)
