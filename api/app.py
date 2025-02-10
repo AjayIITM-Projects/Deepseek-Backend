@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 from api.models import db, User, Course, Announcement, Week, Module, TestCase, Question, UserCourse
-import api.controllers  # Import the controllers
+from api.controllers import * # Import the controllers
 from datetime import datetime
 
 # Initialize Flask app
@@ -24,12 +24,12 @@ jwt = JWTManager(app)
 api = Api(app)
 
 # Register API resources
-api.add_resource(controllers.Login, '/login')
-api.add_resource(controllers.Study, '/study')
-api.add_resource(controllers.CourseAPI, '/course')
+api.add_resource(Login, '/login')
+api.add_resource(Study, '/study')
+api.add_resource(CourseAPI, '/course')
 
 # Register Flask routes
-app.register_blueprint(controllers.course_bp)
+app.register_blueprint(course_bp)
 
 # Function to drop tables, recreate them, and seed dummy data
 def reset_and_seed_database():
