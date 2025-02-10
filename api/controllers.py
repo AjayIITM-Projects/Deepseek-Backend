@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_restful import Resource
 from flask_bcrypt import check_password_hash
 from flask_jwt_extended import create_access_token, get_jwt_identity
-from models import db, User, Course, Announcement, Week, Module, TestCase, Question, UserCourse
+from api.models import db, User, Course, Announcement, Week, Module, TestCase, Question, UserCourse
 from youtube_transcript_api import YouTubeTranscriptApi
 from flask_bcrypt import Bcrypt
 
