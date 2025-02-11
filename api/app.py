@@ -25,23 +25,20 @@ jwt = JWTManager(app)
 api = Api(app)
 
 disconnect()
+db_status = False
 
 try:
     # Connect to MongoDB
     connect(db="backend", host=os.getenv("MONGO_URI"), alias="default")
     print("DB Connected")  # Print message when connected successfully
+    db_status = True
 except Exception as e:
     print(f"DB Connection Failed: {e}")  # Print error message if connection fails
 
 # Route to check DB status
 @app.route('/db_status', methods=['GET'])
 def check_db_status():
-    try:
-        # Try to get database to check connection
-        get_db("default")
-        return jsonify({"status": "connected", "message": "Database is connected"}), 200
-    except Exception as e:
-        return jsonify({"status": "disconnected", "message": f"Database connection failed: {str(e)}"}), 500
+    return jsonify({"status": db_status}), 200
 
 @app.route('/')
 def home():
