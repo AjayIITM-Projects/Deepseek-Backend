@@ -1,111 +1,84 @@
-from flask_sqlalchemy import SQLAlchemy
+from mongoengine import Document, EmbeddedDocument, fields, connect
 from datetime import datetime
 
-db = SQLAlchemy()
+# Connect to MongoDB
+connect(db="your_database_name", host="mongodb://localhost:27017/your_database_name")
 
 # -----------------------------
-# User Model (Already Provided)
+# User Model
 # -----------------------------
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
-    role = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    name = db.Column(db.String(120), nullable=False)
-    profile_picture_url = db.Column(db.String(200))  # Optional
+class User(Document):
+    username = fields.StringField(required=True, unique=True, max_length=80)
+    password = fields.StringField(required=True)
+    role = fields.StringField(required=True, max_length=50)
+    email = fields.EmailField(required=True, unique=True)
+    name = fields.StringField(required=True, max_length=120)
+    profile_picture_url = fields.StringField(max_length=200)  # Optional
+    registered_courses = fields.ListField(fields.ReferenceField('Course'))  # Many-to-Many
 
 # -----------------------------
-# Course Model (Already Provided)
+# Course Model
 # -----------------------------
-class Course(db.Model):
-    CourseID = db.Column(db.Integer, primary_key=True)
-    CourseName = db.Column(db.String(120), nullable=False)
-    CourseDescription = db.Column(db.String(500), nullable=False)
-    StartDate = db.Column(db.DateTime, nullable=False)
-    EndDate = db.Column(db.DateTime, nullable=False)
+class Course(Document):
+    CourseName = fields.StringField(required=True, max_length=120)
+    CourseDescription = fields.StringField(required=True, max_length=500)
+    StartDate = fields.DateTimeField(required=True)
+    EndDate = fields.DateTimeField(required=True)
+    registered_users = fields.ListField(fields.ReferenceField(User))  # Many-to-Many
 
 # -----------------------------
 # Announcement Model
 # -----------------------------
-class Announcement(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.CourseID'), nullable=False)
-    message = db.Column(db.String(500), nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
-
-    course = db.relationship("Course", backref=db.backref("announcements", lazy=True))
+class Announcement(Document):
+    course = fields.ReferenceField(Course, required=True, reverse_delete_rule=fields.CASCADE)
+    message = fields.StringField(required=True, max_length=500)
+    date = fields.DateTimeField(default=datetime.utcnow)
 
 # -----------------------------
 # Week Model
 # -----------------------------
-class Week(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.CourseID'), nullable=False)
-    title = db.Column(db.String(120), nullable=False)
-    deadline = db.Column(db.DateTime, nullable=False)
+class Week(Document):
+    course = fields.ReferenceField(Course, required=True, reverse_delete_rule=fields.CASCADE)
+    title = fields.StringField(required=True, max_length=120)
+    deadline = fields.DateTimeField(required=True)
 
-    course = db.relationship("Course", backref=db.backref("weeks", lazy=True))
+# -----------------------------
+# Embedded Test Case Model
+# -----------------------------
+class TestCase(EmbeddedDocument):
+    input_data = fields.StringField(required=True, max_length=200)
+    expected_output = fields.StringField(required=True, max_length=200)
+
+# -----------------------------
+# Embedded Question Model
+# -----------------------------
+class Question(EmbeddedDocument):
+    question_text = fields.StringField(required=True, max_length=500)
+    type = fields.StringField(required=True, choices=["mcq", "msq", "nat"])
+    options = fields.ListField(fields.StringField())  # Store as an array
+    correct_answer = fields.StringField(required=True, max_length=200)
 
 # -----------------------------
 # Module Model
 # -----------------------------
-class Module(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    week_id = db.Column(db.Integer, db.ForeignKey('week.id'), nullable=False)
-    title = db.Column(db.String(120), nullable=False)
-    type = db.Column(db.String(50), nullable=False)  # ["video", "coding", "assignment", "document"]
-    
+class Module(Document):
+    week = fields.ReferenceField(Week, required=True, reverse_delete_rule=fields.CASCADE)
+    title = fields.StringField(required=True, max_length=120)
+    type = fields.StringField(required=True, choices=["video", "coding", "assignment", "document"])
+
     # Video type
-    url = db.Column(db.String(300))
+    url = fields.StringField(max_length=300)
 
     # Coding type
-    language = db.Column(db.String(50))
-    description = db.Column(db.String(500))
-    code_template = db.Column(db.Text)
+    language = fields.StringField(max_length=50)
+    description = fields.StringField(max_length=500)
+    code_template = fields.StringField()
+    test_cases = fields.EmbeddedDocumentListField(TestCase)  # Embedded Test Cases
 
     # Assignment type
-    graded = db.Column(db.Boolean, default=False)
+    graded = fields.BooleanField(default=False)
+    questions = fields.EmbeddedDocumentListField(Question)  # Embedded Questions
 
     # Document type
-    doc_type = db.Column(db.String(20))
-    doc_url = db.Column(db.String(300))
-
-    week = db.relationship("Week", backref=db.backref("modules", lazy=True))
-
-# -----------------------------
-# Test Case Model (For Coding Modules)
-# -----------------------------
-class TestCase(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    module_id = db.Column(db.Integer, db.ForeignKey('module.id'), nullable=False)
-    input_data = db.Column(db.String(200), nullable=False)
-    expected_output = db.Column(db.String(200), nullable=False)
-
-    module = db.relationship("Module", backref=db.backref("test_cases", lazy=True))
-
-# -----------------------------
-# Question Model (For Assignments)
-# -----------------------------
-class Question(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    module_id = db.Column(db.Integer, db.ForeignKey('module.id'), nullable=False)
-    question_text = db.Column(db.String(500), nullable=False)
-    type = db.Column(db.String(20), nullable=False)  # ["mcq", "msq", "nat"]
-    options = db.Column(db.Text)  # Comma-separated options (for MCQ and MSQ)
-    correct_answer = db.Column(db.String(200), nullable=False)
-
-    module = db.relationship("Module", backref=db.backref("questions", lazy=True))
-
-
-# -----------------------------
-# UserCourse Model (Junction Table for Many-to-Many Relationship)
-# -----------------------------
-class UserCourse(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    course_id = db.Column(db.Integer, db.ForeignKey('course.CourseID'), nullable=False)
-
-    user = db.relationship("User", backref=db.backref("registered_courses", lazy=True))
-    course = db.relationship("Course", backref=db.backref("registered_users", lazy=True))
-
+    doc_type = fields.StringField(max_length=20)
+    doc_url = fields.StringField(max_length=300)
