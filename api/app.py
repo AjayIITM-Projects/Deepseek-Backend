@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
-from mongoengine import connect
+from mongoengine import connect, disconnect
 from datetime import datetime
 from api.controllers import *  # Import controllers
 from api.models import User, Course, Announcement, Week, Module, TestCase, Question  # Import models
@@ -23,8 +23,9 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 api = Api(app)
 
+disconnect()
 # Connect to MongoDB
-connect(db="backend", host=os.getenv("MONGO_URI"))
+connect(db="backend", host=os.getenv("MONGO_URI"), alias="default")
 
 
 # Register API resources

@@ -1,8 +1,6 @@
-from mongoengine import Document, EmbeddedDocument, fields, connect
+from mongoengine import Document, EmbeddedDocument, fields, connect, CASCADE
 from datetime import datetime
 
-# Connect to MongoDB
-connect(db="your_database_name", host="mongodb://localhost:27017/your_database_name")
 
 # -----------------------------
 # User Model
@@ -30,7 +28,7 @@ class Course(Document):
 # Announcement Model
 # -----------------------------
 class Announcement(Document):
-    course = fields.ReferenceField(Course, required=True, reverse_delete_rule=fields.CASCADE)
+    course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
     message = fields.StringField(required=True, max_length=500)
     date = fields.DateTimeField(default=datetime.utcnow)
 
@@ -38,7 +36,7 @@ class Announcement(Document):
 # Week Model
 # -----------------------------
 class Week(Document):
-    course = fields.ReferenceField(Course, required=True, reverse_delete_rule=fields.CASCADE)
+    course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
     title = fields.StringField(required=True, max_length=120)
     deadline = fields.DateTimeField(required=True)
 
@@ -62,7 +60,7 @@ class Question(EmbeddedDocument):
 # Module Model
 # -----------------------------
 class Module(Document):
-    week = fields.ReferenceField(Week, required=True, reverse_delete_rule=fields.CASCADE)
+    week = fields.ReferenceField(Week, required=True, reverse_delete_rule=CASCADE)
     title = fields.StringField(required=True, max_length=120)
     type = fields.StringField(required=True, choices=["video", "coding", "assignment", "document"])
 

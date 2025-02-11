@@ -8,4 +8,4 @@ mongoengine==0.27.0
 pymongo==4.6.1
 gunicorn==21.2.0
 youtube_transcript_api
-python-dotenv=1.0.1
+python-dotenv==1.0.1
