@@ -47,12 +47,12 @@ def home():
 # Register API resources
 api.add_resource(Login, '/login')
 api.add_resource(Study, '/study')
-api.add_resource(CourseAPI, '/course')
+api.add_resource(CourseAPI, '/course/<course_id>') 
 api.add_resource(Test, '/test')
 
 # Register Flask routes
 app.register_blueprint(course_bp)
 
-# if __name__ == '__main__':
-# #     # seed_database()
-#     app.run(debug=True)
+if __name__ == '__main__':
+#     # seed_database()
+    app.run(debug=True)

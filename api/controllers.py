@@ -56,20 +56,35 @@ class Study(Resource):
         except Exception as e:
             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
 
+from flask import jsonify, request
+from flask_restful import Resource
+from bson import ObjectId
+
 # Course API Resource
 class CourseAPI(Resource):
-    def get(self):
+    def get(self, course_id):
         try:
-            course = Course.objects.first()
+            # Validate course_id
+            if not ObjectId.is_valid(course_id):
+                return jsonify({'error': 'Invalid course ID format', 'code': 400})
+
+            # Fetch the specific course
+            course = Course.objects(id=course_id).first()
             if not course:
                 return jsonify({'error': 'Course not found', 'code': 404})
 
+            # Fetch announcements for the course
             announcements = Announcement.objects(course=course)
             announcement_list = [
-                {"announcementId": str(ann.id), "message": ann.message, "date": ann.date.strftime("%Y-%m-%d")}
+                {
+                    "announcementId": str(ann.id),
+                    "message": ann.message,
+                    "date": ann.date.strftime("%Y-%m-%d")
+                }
                 for ann in announcements
             ]
 
+            # Fetch weeks for the course
             weeks = Week.objects(course=course)
             week_list = []
             for week in weeks:
@@ -88,15 +103,29 @@ class CourseAPI(Resource):
                             "language": module.language,
                             "description": module.description,
                             "codeTemplate": module.code_template,
-                            "testCases": [{"input": tc.input_data, "expected": tc.expected_output} for tc in module.test_cases]
+                            "testCases": [
+                                {"input": tc.input_data, "expected": tc.expected_output} for tc in module.test_cases
+                            ]
                         })
                     elif module.type == "assignment":
                         module_data.update({
-                            "questions": [{"question_text": q.question_text, "type": q.type, "options": q.options, "correct": q.correct_answer} for q in module.questions],
+                            "questions": [
+                                {
+                                    "question_text": q.question_text,
+                                    "type": q.type,
+                                    "options": q.options,
+                                    "correct": q.correct_answer
+                                } 
+                                for q in module.questions
+                            ],
                             "graded": module.graded
                         })
                     elif module.type == "document":
-                        module_data.update({"docType": module.doc_type, "url": module.doc_url, "description": module.description})
+                        module_data.update({
+                            "docType": module.doc_type,
+                            "url": module.doc_url,
+                            "description": module.description
+                        })
                     module_list.append(module_data)
 
                 week_list.append({
@@ -106,6 +135,7 @@ class CourseAPI(Resource):
                     "modules": module_list
                 })
 
+            # Construct the response
             course_data = {
                 "courseId": str(course.id),
                 "title": course.CourseName,
@@ -114,8 +144,10 @@ class CourseAPI(Resource):
                 "weeks": week_list
             }
             return jsonify(course_data)
+
         except Exception as e:
             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
+
 
 # YouTube Transcript API
 @course_bp.route('/transcript', methods=['GET'])
