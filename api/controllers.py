@@ -8,6 +8,10 @@ from api.models import User, Course, Announcement, Week, Module, TestCase, Quest
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
 
+class Test(Resource):
+    def get(self):
+        return jsonify({"message": "Hello World!"})
+
 # Login Resource
 class Login(Resource):
     def post(self):
