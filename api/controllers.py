@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, make_response, request, jsonify
 from flask_restful import Resource
 from flask_bcrypt import check_password_hash
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
@@ -16,46 +16,52 @@ course_bp = Blueprint('course', __name__)
 class RegisteredCourses(Resource):
     def get(self):
         try:
-            # data = request.get_json()
             email = request.args.get('email')
-            # print(email)
+            if not email:
+                return make_response(jsonify({"error": "Email is required"}), 400)
+
             user = User.objects(email=email).first()
             if not user:
-                return jsonify({"error": "User not found", "code": 404})
+                return make_response(jsonify({"error": "User not found"}), 404)
 
-            registered_courses = user.registeredCourses  # Updated
+            registered_courses = user.registeredCourses
             if not registered_courses:
-                return jsonify({"registeredCourses": []})
+                return make_response(jsonify({"registeredCourses": []}), 200)
 
             course_list = [
-                {"id": str(course.id), "name": course.name, "description": course.description}  # Updated
+                {
+                    "id": str(course.id),
+                    "name": course.name,
+                    "description": course.description
+                }
                 for course in registered_courses
             ]
-            return jsonify({"registeredCourses": course_list})  # Updated
+            return make_response(jsonify({"registeredCourses": course_list}), 200)
+
         except Exception as e:
-            return jsonify({"error": "Something went wrong", "message": str(e)}), 500
+            return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
     def post(self):
         try:
             data = request.get_json()
             if not data or "email" not in data or "courses" not in data:
-                return jsonify({"error": "Email and courses are required", "code": 400})
+                return make_response(jsonify({"error": "Email and courses are required"}), 400)
 
             email = data["email"]
             course_ids = data["courses"]
 
-            if not all(isinstance(course_id, str) for course_id in course_ids):
-                return jsonify({"error": "Invalid course ID format", "code": 400})
+            if not isinstance(course_ids, list) or not all(isinstance(course_id, str) for course_id in course_ids):
+                return make_response(jsonify({"error": "Invalid course ID format"}), 400)
 
             try:
                 course_object_ids = [ObjectId(course_id) for course_id in course_ids]
-            except:
-                return jsonify({"error": "Invalid course ID", "code": 400})
+            except Exception as e:
+                return make_response(jsonify({"error": "Invalid course ID", "details": str(e)}), 400)
 
             courses = Course.objects(id__in=course_object_ids)
 
             if len(courses) != len(course_ids):
-                return jsonify({"error": "Some course IDs are invalid", "code": 400})
+                return make_response(jsonify({"error": "Some course IDs are invalid"}), 400)
 
             user = User.objects(email=email).first()
 
@@ -72,7 +78,7 @@ class RegisteredCourses(Resource):
                             course.registeredUsers.append(user)
                             course.save()
 
-                return jsonify({"message": "User updated with new courses", "user_id": str(user.id), "code": 200})
+                return make_response(jsonify({"message": "User updated with new courses", "user_id": str(user.id)}), 200)
 
             else:
                 new_user = User(
@@ -87,11 +93,10 @@ class RegisteredCourses(Resource):
                     course.registeredUsers.append(new_user)
                     course.save()
 
-                return jsonify({"message": "User registered successfully", "user_id": str(new_user.id), "code": 201})
+                return make_response(jsonify({"message": "User registered successfully", "user_id": str(new_user.id)}), 201)
 
         except Exception as e:
-            return jsonify({"error": "Something went wrong", "message": str(e), "code": 500})
-   
+            return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
 # Login Resource
 # class Login(Resource):
