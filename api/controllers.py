@@ -16,9 +16,9 @@ course_bp = Blueprint('course', __name__)
 class RegisteredCourses(Resource):
     def get(self):
         try:
-            data = request.get_json()
+            # data = request.get_json()
             email = request.args.get('email')
-
+            # print(email)
             user = User.objects(email=email).first()
             if not user:
                 return jsonify({"error": "User not found", "code": 404})
