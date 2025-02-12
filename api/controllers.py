@@ -4,6 +4,7 @@ from flask_bcrypt import check_password_hash
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from youtube_transcript_api import YouTubeTranscriptApi
 from api.models import User, Course, Announcement, Week, Module, TestCase, Question  # Import models
+from bson import ObjectId
 
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
@@ -53,9 +54,7 @@ class Study(Resource):
         except Exception as e:
             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
 
-from flask import jsonify, request
-from flask_restful import Resource
-from bson import ObjectId
+
 
 # Course API Resource
 class CourseAPI(Resource):
