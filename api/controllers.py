@@ -9,36 +9,116 @@ from bson import ObjectId
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
 
-# Login Resource
-class Login(Resource):
+# ---------------------------
+# Register Route
+# ---------------------------
+
+class RegisteredCourses(Resource):
+    def get(self):
+        try:
+            data = request.get_json()
+            email = data['email']
+
+            user = User.objects(email=email).first()
+            if not user:
+                return jsonify({"error": "User not found", "code": 404})
+
+            registered_courses = user.registeredCourses  # Updated
+            if not registered_courses:
+                return jsonify({"registeredCourses": []})
+
+            course_list = [
+                {"id": str(course.id), "name": course.name, "description": course.description}  # Updated
+                for course in registered_courses
+            ]
+            return jsonify({"registeredCourses": course_list})  # Updated
+        except Exception as e:
+            return jsonify({"error": "Something went wrong", "message": str(e)}), 500
+
     def post(self):
         try:
             data = request.get_json()
-            print(data)
-            username = data.get('username')
-            password = data.get('password')
+            if not data or "email" not in data or "courses" not in data:
+                return jsonify({"error": "Email and courses are required", "code": 400})
 
-            user = User.objects(username=username).first()
-            if not user or not check_password_hash(user.password, password):
-                return jsonify({'error': 'Invalid credentials', 'code': 400})
+            email = data["email"]
+            course_ids = data["courses"]
 
-            access_token = create_access_token(identity={
-                'user_id': str(user.id),
-                'role': user.role,
-                'email': user.email
-            })
+            if not all(isinstance(course_id, str) for course_id in course_ids):
+                return jsonify({"error": "Invalid course ID format", "code": 400})
 
-            return jsonify({
-                'token': access_token,
-                'code': 200,
-                'user_id': str(user.id),
-                'role': user.role,
-                'email': user.email,
-                'name': user.name,
-                'profilePictureUrl': user.profilePictureUrl if hasattr(user, 'profilePictureUrl') else ''
-            })
+            try:
+                course_object_ids = [ObjectId(course_id) for course_id in course_ids]
+            except:
+                return jsonify({"error": "Invalid course ID", "code": 400})
+
+            courses = Course.objects(id__in=course_object_ids)
+
+            if len(courses) != len(course_ids):
+                return jsonify({"error": "Some course IDs are invalid", "code": 400})
+
+            user = User.objects(email=email).first()
+
+            if user:
+                existing_courses = set(str(c.id) for c in user.registeredCourses)
+                new_courses = [c for c in courses if str(c.id) not in existing_courses]
+
+                if new_courses:
+                    user.registeredCourses.extend(new_courses)
+                    user.save()
+
+                    for course in new_courses:
+                        if user not in course.registeredUsers:
+                            course.registeredUsers.append(user)
+                            course.save()
+
+                return jsonify({"message": "User updated with new courses", "user_id": str(user.id), "code": 200})
+
+            else:
+                new_user = User(
+                    role="student",
+                    email=email,
+                    name=email.split("@")[0].capitalize(),
+                    registeredCourses=courses
+                )
+                new_user.save()
+
+                for course in courses:
+                    course.registeredUsers.append(new_user)
+                    course.save()
+
+                return jsonify({"message": "User registered successfully", "user_id": str(new_user.id), "code": 201})
+
         except Exception as e:
-            return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
+            return jsonify({"error": "Something went wrong", "message": str(e), "code": 500})
+   
+
+# Login Resource
+# class Login(Resource):
+#     def post(self):
+#         try:
+#             data = request.get_json()
+#             user = User.objects(username=username).first()
+#             if not user or not check_password_hash(user.password, password):
+#                 return jsonify({'error': 'Invalid credentials', 'code': 400})
+
+#             access_token = create_access_token(identity={
+#                 'user_id': str(user.id),
+#                 'role': user.role,
+#                 'email': user.email
+#             })
+
+#             return jsonify({
+#                 'token': access_token,
+#                 'code': 200,
+#                 'user_id': str(user.id),
+#                 'role': user.role,
+#                 'email': user.email,
+#                 'name': user.name,
+#                 'profilePictureUrl': user.profilePictureUrl if hasattr(user, 'profilePictureUrl') else ''
+#             })
+#         except Exception as e:
+#             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
 
 
 class CourseAPI(Resource):
@@ -158,26 +238,27 @@ def get_transcript():
         return jsonify({"error": "Could not fetch transcript", "message": str(e)}), 500
 
 
-# Get the user registered courses
-@course_bp.route('/registered-courses', methods=['GET'])
-@jwt_required()
-def get_registered_courses():
-    try:
-        current_user = get_jwt_identity()
-        user_id = current_user['user_id']
+# # Get the user registered courses
+# @course_bp.route('/registered-courses', methods=['GET'])
+# # @jwt_required()
+# def get_registered_courses():
+#     try:
+#         # current_user = get_jwt_identity()
+#         data = request.get_json()
+#         email = data['email']
 
-        user = User.objects(id=user_id).first()
-        if not user:
-            return jsonify({"error": "User not found", "code": 404})
+#         user = User.objects(email=email).first()
+#         if not user:
+#             return jsonify({"error": "User not found", "code": 404})
 
-        registered_courses = user.registeredCourses  # Updated
-        if not registered_courses:
-            return jsonify({"registeredCourses": []})
+#         registered_courses = user.registeredCourses  # Updated
+#         if not registered_courses:
+#             return jsonify({"registeredCourses": []})
 
-        course_list = [
-            {"id": str(course.id), "name": course.name, "description": course.description}  # Updated
-            for course in registered_courses
-        ]
-        return jsonify({"registeredCourses": course_list})  # Updated
-    except Exception as e:
-        return jsonify({"error": "Something went wrong", "message": str(e)}), 500
+#         course_list = [
+#             {"id": str(course.id), "name": course.name, "description": course.description}  # Updated
+#             for course in registered_courses
+#         ]
+#         return jsonify({"registeredCourses": course_list})  # Updated
+#     except Exception as e:
+#         return jsonify({"error": "Something went wrong", "message": str(e)}), 500

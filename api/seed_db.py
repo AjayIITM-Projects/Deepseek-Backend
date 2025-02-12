@@ -16,8 +16,6 @@ def seed_database():
         # Create a sample user
         hashed_password = bcrypt.generate_password_hash("password123").decode('utf-8')
         user1 = User(
-            username="admin",
-            password=hashed_password,
             role="admin",
             email="admin@example.com",
             name="Admin User"

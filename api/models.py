@@ -6,8 +6,6 @@ from datetime import datetime
 # User Model
 # -----------------------------
 class User(Document):
-    username = fields.StringField(required=True, unique=True, max_length=80)
-    password = fields.StringField(required=True)
     role = fields.StringField(required=True, max_length=50)
     email = fields.EmailField(required=True, unique=True)
     name = fields.StringField(required=True, max_length=120)
