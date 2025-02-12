@@ -4,7 +4,6 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 from mongoengine import connect, disconnect, get_db
-from datetime import datetime
 from api.controllers import *  # Import controllers
 from api.models import User, Course, Announcement, Week, Module, TestCase, Question  # Import models
 from dotenv import load_dotenv
@@ -47,8 +46,7 @@ def home():
 # Register API resources
 api.add_resource(Login, '/login')
 api.add_resource(Study, '/study')
-api.add_resource(CourseAPI, '/course/<course_id>') 
-api.add_resource(Test, '/test')
+api.add_resource(CourseAPI, '/courses', '/course/<course_id>')
 
 # Register Flask routes
 app.register_blueprint(course_bp)
