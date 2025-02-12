@@ -11,18 +11,18 @@ class User(Document):
     role = fields.StringField(required=True, max_length=50)
     email = fields.EmailField(required=True, unique=True)
     name = fields.StringField(required=True, max_length=120)
-    profile_picture_url = fields.StringField(max_length=200)  # Optional
-    registered_courses = fields.ListField(fields.ReferenceField('Course'))  # Many-to-Many
+    profilePictureUrl = fields.StringField(max_length=200)  # Optional
+    registeredCourses = fields.ListField(fields.ReferenceField('Course'))  # Many-to-Many
 
 # -----------------------------
 # Course Model
 # -----------------------------
 class Course(Document):
-    CourseName = fields.StringField(required=True, max_length=120)
-    CourseDescription = fields.StringField(required=True, max_length=500)
-    StartDate = fields.DateTimeField(required=True)
-    EndDate = fields.DateTimeField(required=True)
-    registered_users = fields.ListField(fields.ReferenceField(User))  # Many-to-Many
+    name = fields.StringField(required=True, max_length=120)
+    description = fields.StringField(required=True, max_length=500)
+    startDate = fields.DateTimeField(required=True)
+    endDate = fields.DateTimeField(required=True)
+    registeredUsers = fields.ListField(fields.ReferenceField(User))  # Many-to-Many
 
 # -----------------------------
 # Announcement Model
@@ -44,17 +44,17 @@ class Week(Document):
 # Embedded Test Case Model
 # -----------------------------
 class TestCase(EmbeddedDocument):
-    input_data = fields.StringField(required=True, max_length=200)
-    expected_output = fields.StringField(required=True, max_length=200)
+    inputData = fields.StringField(required=True, max_length=200)
+    expectedOutput = fields.StringField(required=True, max_length=200)
 
 # -----------------------------
 # Embedded Question Model
 # -----------------------------
 class Question(EmbeddedDocument):
-    question_text = fields.StringField(required=True, max_length=500)
+    question = fields.StringField(required=True, max_length=500)
     type = fields.StringField(required=True, choices=["mcq", "msq", "nat"])
     options = fields.ListField(fields.StringField())  # Store as an array
-    correct_answer = fields.StringField(required=True, max_length=200)
+    correctAnswer = fields.StringField(required=True, max_length=200)
 
 # -----------------------------
 # Module Model
@@ -70,13 +70,13 @@ class Module(Document):
     # Coding type
     language = fields.StringField(max_length=50)
     description = fields.StringField(max_length=500)
-    code_template = fields.StringField()
-    test_cases = fields.EmbeddedDocumentListField(TestCase)  # Embedded Test Cases
+    codeTemplate = fields.StringField()
+    testCases = fields.EmbeddedDocumentListField(TestCase)  # Embedded Test Cases
 
     # Assignment type
-    graded = fields.BooleanField(default=False)
+    isGraded = fields.BooleanField(default=False)
     questions = fields.EmbeddedDocumentListField(Question)  # Embedded Questions
 
     # Document type
-    doc_type = fields.StringField(max_length=20)
-    doc_url = fields.StringField(max_length=300)
+    docType = fields.StringField(max_length=20)
+    docUrl = fields.StringField(max_length=300)

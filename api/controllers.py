@@ -22,7 +22,11 @@ class Login(Resource):
             if not user or not check_password_hash(user.password, password):
                 return jsonify({'error': 'Invalid credentials', 'code': 400})
 
-            access_token = create_access_token(identity={'user_id': str(user.id), 'role': user.role, 'email': user.email})
+            access_token = create_access_token(identity={
+                'user_id': str(user.id),
+                'role': user.role,
+                'email': user.email
+            })
 
             return jsonify({
                 'token': access_token,
@@ -31,29 +35,10 @@ class Login(Resource):
                 'role': user.role,
                 'email': user.email,
                 'name': user.name,
-                'profile_picture_url': user.profile_picture_url if hasattr(user, 'profile_picture_url') else ''
+                'profilePictureUrl': user.profilePictureUrl if hasattr(user, 'profilePictureUrl') else ''
             })
         except Exception as e:
             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
-
-# # Study Resource
-# class Study(Resource):
-#     def get(self):
-#         try:
-#             courses = Course.objects()
-#             course_content = [
-                # {
-                #     'course_id': str(course.id),
-                #     'course_name': course.CourseName,
-                #     'course_description': course.CourseDescription,
-                #     'start_date': course.StartDate.strftime("%Y-%m-%d"),
-                #     'end_date': course.EndDate.strftime("%Y-%m-%d"),
-                # } for course in courses
-#             ]
-#             return jsonify({'study': course_content, 'code': 200})
-#         except Exception as e:
-#             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
-
 
 
 class CourseAPI(Resource):
@@ -75,7 +60,7 @@ class CourseAPI(Resource):
                     {
                         "announcementId": str(ann.id),
                         "message": ann.message,
-                        "date": ann.date.strftime("%Y-%m-%d")
+                        "date": ann.date.strftime("%Y-%m-%dT%H:%M:%SZ")
                     }
                     for ann in announcements
                 ]
@@ -98,44 +83,46 @@ class CourseAPI(Resource):
                             module_data.update({
                                 "language": module.language,
                                 "description": module.description,
-                                "codeTemplate": module.code_template,
+                                "codeTemplate": module.codeTemplate,  # Updated to camel case
                                 "testCases": [
-                                    {"input": tc.input_data, "expected": tc.expected_output} for tc in module.test_cases
+                                    {"inputData": tc.inputData, "expectedOutput": tc.expectedOutput} for tc in module.testCases  # Updated
                                 ]
                             })
                         elif module.type == "assignment":
                             module_data.update({
                                 "questions": [
                                     {
-                                        "question_text": q.question_text,
+                                        "question": q.question,
                                         "type": q.type,
                                         "options": q.options,
-                                        "correct": q.correct_answer
+                                        "correctAnswer": q.correctAnswer  # Updated
                                     } 
                                     for q in module.questions
                                 ],
-                                "graded": module.graded
+                                "graded": module.isGraded
                             })
                         elif module.type == "document":
                             module_data.update({
-                                "docType": module.doc_type,
-                                "url": module.doc_url,
+                                "docType": module.docType,  # Updated
+                                "docUrl": module.docUrl,  # Updated
                                 "description": module.description
                             })
                         module_list.append(module_data)
 
                     week_list.append({
                         "weekId": str(week.id),
-                        "weekTitle": week.title,
-                        "deadline": week.deadline.strftime("%Y-%m-%d"),
+                        "title": week.title,  # Fixed naming
+                        "deadline": week.deadline.strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "modules": module_list
                     })
 
                 # Construct the response
                 course_data = {
                     "courseId": str(course.id),
-                    "title": course.CourseName,
-                    "description": course.CourseDescription,
+                    "name": course.name,  # Updated
+                    "description": course.description,  # Updated
+                    "startDate": course.startDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
+                    "endDate": course.endDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
                     "announcements": announcement_list,
                     "weeks": week_list
                 }
@@ -146,10 +133,10 @@ class CourseAPI(Resource):
                 courses = Course.objects()
                 course_list = [{
                     'id': str(course.id),
-                    'name': course.CourseName,
-                    'description': course.CourseDescription,
-                    'start_date': course.StartDate.strftime("%Y-%m-%d"),
-                    'end_date': course.EndDate.strftime("%Y-%m-%d"),
+                    'name': course.name,  # Updated
+                    'description': course.description,  # Updated
+                    'startDate': course.startDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
+                    'endDate': course.endDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
                 } for course in courses]
                 return jsonify({"courses": course_list, "code": 200})
 
@@ -183,14 +170,14 @@ def get_registered_courses():
         if not user:
             return jsonify({"error": "User not found", "code": 404})
 
-        registered_courses = user.registered_courses  # Assuming `registered_courses` is a ListField
+        registered_courses = user.registeredCourses  # Updated
         if not registered_courses:
-            return jsonify({"registered_courses": []})
+            return jsonify({"registeredCourses": []})
 
         course_list = [
-            {"id": str(course.id), "title": course.CourseName, "description": course.CourseDescription}
+            {"id": str(course.id), "name": course.name, "description": course.description}  # Updated
             for course in registered_courses
         ]
-        return jsonify({"registered_courses": course_list})
+        return jsonify({"registeredCourses": course_list})  # Updated
     except Exception as e:
         return jsonify({"error": "Something went wrong", "message": str(e)}), 500

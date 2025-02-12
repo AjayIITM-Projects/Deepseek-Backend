@@ -51,6 +51,6 @@ api.add_resource(CourseAPI, '/courses', '/course/<course_id>')
 # Register Flask routes
 app.register_blueprint(course_bp)
 
-# if __name__ == '__main__':
-#     seed_database()
-#     app.run(debug=True)
+if __name__ == '__main__':
+    seed_database()
+    app.run(debug=True)

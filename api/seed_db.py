@@ -26,19 +26,19 @@ def seed_database():
 
         # Create Course 1: MLF (Machine Learning Fundamentals)
         course1 = Course(
-            CourseName="Machine Learning Fundamentals (MLF)",
-            CourseDescription="Learn the fundamentals of Machine Learning, including regression, classification, and dimensionality reduction.",
-            StartDate=datetime(2025, 2, 1),
-            EndDate=datetime(2025, 6, 1)
+            name="Machine Learning Fundamentals (MLF)",
+            description="Learn the fundamentals of Machine Learning, including regression, classification, and dimensionality reduction.",
+            startDate=datetime(2025, 2, 1),
+            endDate=datetime(2025, 6, 1)
         )
         course1.save()
 
         # Create Course 2: PDSA (Problem Solving and Data Structures Algorithms)
         course2 = Course(
-            CourseName="Problem Solving and Data Structures Algorithms (PDSA)",
-            CourseDescription="Learn problem-solving techniques and data structures algorithms, including sorting, searching, and binary search.",
-            StartDate=datetime(2025, 2, 1),
-            EndDate=datetime(2025, 6, 1)
+            name="Problem Solving and Data Structures Algorithms (PDSA)",
+            description="Learn problem-solving techniques and data structures algorithms, including sorting, searching, and binary search.",
+            startDate=datetime(2025, 2, 1),
+            endDate=datetime(2025, 6, 1)
         )
         course2.save()
 
@@ -68,9 +68,9 @@ def seed_database():
 
         module2_mlf = Module(
             week=week1_mlf,
-            title="1.2 – Supervised Learning: Classification",
+            title="1.2 – Supervised Learning: Classification - Video",
             type="video",
-            url="https://www.youtube.com/embed/QtOrjs0Fzzc - Video"
+            url="https://www.youtube.com/embed/QtOrjs0Fzzc"
         ).save()
 
         module3_mlf = Module(
@@ -85,10 +85,10 @@ def seed_database():
             week=week1_mlf,
             title="Practice Quiz",
             type="assignment",
-            graded=False,
+            isGraded=False,
             questions=[
                 Question(
-                    question_text="Which of the following are examples of unsupervised learning problems?",
+                    question="Which of the following are examples of unsupervised learning problems?",
                     type="mcq",
                     options=[
                         "Grouping tweets based on topic similarity",
@@ -96,10 +96,10 @@ def seed_database():
                         "Checking whether an email is spam or not.",
                         "Identify the gender of online customers based on buying behaviour."
                     ],
-                    correct_answer="Grouping tweets based on topic similarity"
+                    correctAnswer="Grouping tweets based on topic similarity"
                 ),
                 Question(
-                    question_text="Which of the following is/are incorrect?",
+                    question="Which of the following is/are incorrect?",
                     type="mcq",
                     options=[
                         "1(2 ± even) = 1",
@@ -107,17 +107,17 @@ def seed_database():
                         "1(0.5 ∉ ℝ) = 0",
                         "1(2 ∈ (2, 3, 4)) = 0"
                     ],
-                    correct_answer="1(2 ∈ (2, 3, 4)) = 0"
+                    correctAnswer="1(2 ∈ (2, 3, 4)) = 0"
                 ),
                 Question(
-                    question_text="Which of the following functions corresponds to a classification model?",
+                    question="Which of the following functions corresponds to a classification model?",
                     type="mcq",
                     options=[
                         "f : ℝ^d → ℝ",
                         "f : ℝ^d → { +1, -1 }",
                         "f : ℝ^d → ℝ^d'"
                     ],
-                    correct_answer="f : ℝ^d → { +1, -1 }"
+                    correctAnswer="f : ℝ^d → { +1, -1 }"
                 )
             ]
         ).save()
@@ -127,20 +127,20 @@ def seed_database():
             week=week1_mlf,
             title="Graded Quiz",
             type="assignment",
-            graded=True,
+            isGraded=True,
             questions=[
                 Question(
-                    question_text="Which of the following may not be an appropriate choice of loss function for regression?",
+                    question="Which of the following may not be an appropriate choice of loss function for regression?",
                     type="mcq",
                     options=[
                         "1/n ∑(f(x_i) - y_i)^2",
                         "1/n ∑|f(x_i) - y_i|",
                         "1/n ∑1(f(x_i) ≠ y_i)"
                     ],
-                    correct_answer="1/n ∑1(f(x_i) ≠ y_i)"
+                    correctAnswer="1/n ∑1(f(x_i) ≠ y_i)"
                 ),
                 Question(
-                    question_text="Identify which of the following requires use of classification technique.",
+                    question="Identify which of the following requires use of classification technique.",
                     type="mcq",
                     options=[
                         "Predicting the amount of rainfall in May 2022 in North India based on precipitation data of the year 2021.",
@@ -148,7 +148,7 @@ def seed_database():
                         "Predicting whether an email is spam or not.",
                         "Predicting the number of Covid cases on a given day based on previous month data."
                     ],
-                    correct_answer="Predicting whether an email is spam or not."
+                    correctAnswer="Predicting whether an email is spam or not."
                 )
             ]
         ).save()
@@ -180,10 +180,10 @@ def seed_database():
             week=week1_pdsa,
             title="Practice Quiz",
             type="assignment",
-            graded=False,
+            isGraded=False,
             questions=[
                 Question(
-                    question_text="Which of the following options will validate whether n is a perfect square or not?",
+                    question="Which of the following options will validate whether n is a perfect square or not?",
                     type="mcq",
                     options=[
                         "def h(n): return (n ** .5) == int(n ** .5)",
@@ -191,7 +191,7 @@ def seed_database():
                         "def h(n): for i in range(1, n + 1): if i * i == n: return True return False",
                         "def h(n): for i in range(1, n + 1): if i * i > n: break elif i * i == n: return True return False"
                     ],
-                    correct_answer="def h(n): return (n ** .5) == int(n ** .5)"
+                    correctAnswer="def h(n): return (n ** .5) == int(n ** .5)"
                 )
             ]
         ).save()
@@ -203,10 +203,10 @@ def seed_database():
             type="coding",
             language="Python",
             description="Write a function to find prime pairs that sum to an even number.",
-            code_template="def prime(n):\n    if n < 2:\n        return False\n    for i in range(2, n//2 + 1):\n        if n % i == 0:\n            return False\n    return True\n\ndef Goldbach(n):\n    Res = []\n    for i in range((n//2) + 1):\n        if prime(i) == True:\n            if prime(n - i) == True:\n                Res.append((i, n - i))\n    return Res",
-            test_cases=[
-                TestCase(input_data="12", expected_output="[(5, 7)]"),
-                TestCase(input_data="26", expected_output="[(3, 23), (7, 19), (13, 13)]")
+            codeTemplate="def prime(n):\n    if n < 2:\n        return False\n    for i in range(2, n//2 + 1):\n        if n % i == 0:\n            return False\n    return True\n\ndef Goldbach(n):\n    Res = []\n    for i in range((n//2) + 1):\n        if prime(i) == True:\n            if prime(n - i) == True:\n                Res.append((i, n - i))\n    return Res",
+            testCases=[
+                TestCase(inputData="12", expectedOutput="[(5, 7)]"),
+                TestCase(inputData="26", expectedOutput="[(3, 23), (7, 19), (13, 13)]")
             ]
         ).save()
 
@@ -242,10 +242,10 @@ def seed_database():
             week=week2_mlf,
             title="Practice Quiz",
             type="assignment",
-            graded=False,
+            isGraded=False,
             questions=[
                 Question(
-                    question_text="If U = [10, 100], A = [30, 50], and B = [50, 90], which of the following is/are false? (Consider all values to be integers)",
+                    question="If U = [10, 100], A = [30, 50], and B = [50, 90], which of the following is/are false? (Consider all values to be integers)",
                     type="mcq",
                     options=[
                         "A^C = [10, 30] ∪ [50, 100]",
@@ -255,10 +255,10 @@ def seed_database():
                         "A ∩ B = {50}",
                         "A^C ∩ B^C = [10, 30] ∪ [91, 100]"
                     ],
-                    correct_answer="A ∩ B = ∅"
+                    correctAnswer="A ∩ B = ∅"
                 ),
                 Question(
-                    question_text="Consider two 6-dimensional vectors x and y. Which of the following terms are equivalent? (i) x^T y, (ii) x y, (iii) ∑(x_i y_i)",
+                    question="Consider two 6-dimensional vectors x and y. Which of the following terms are equivalent? (i) x^T y, (ii) x y, (iii) ∑(x_i y_i)",
                     type="mcq",
                     options=[
                         "Only (i) and (ii)",
@@ -266,7 +266,7 @@ def seed_database():
                         "Only (ii) and (iii)",
                         "(i), (ii), and (iii)"
                     ],
-                    correct_answer="Only (i) and (iii)"
+                    correctAnswer="Only (i) and (iii)"
                 )
             ]
         ).save()
@@ -276,10 +276,10 @@ def seed_database():
             week=week2_mlf,
             title="Graded Quiz",
             type="assignment",
-            graded=True,
+            isGraded=True,
             questions=[
                 Question(
-                    question_text="Which of the following functions is/are continuous?",
+                    question="Which of the following functions is/are continuous?",
                     type="mcq",
                     options=[
                         "1/(x - 1)",
@@ -287,10 +287,10 @@ def seed_database():
                         "sign(x - 2)",
                         "sin(x)"
                     ],
-                    correct_answer="sin(x)"
+                    correctAnswer="sin(x)"
                 ),
                 Question(
-                    question_text="Regarding a d-dimensional vector x, which of the following is not equivalent to the rest?",
+                    question="Regarding a d-dimensional vector x, which of the following is not equivalent to the rest?",
                     type="mcq",
                     options=[
                         "x^T x",
@@ -298,7 +298,7 @@ def seed_database():
                         "∑(x_i^2)",
                         "x x^T"
                     ],
-                    correct_answer="x x^T"
+                    correctAnswer="x x^T"
                 )
             ]
         ).save()
@@ -343,10 +343,10 @@ def seed_database():
             week=week2_pdsa,
             title="Practice Quiz",
             type="assignment",
-            graded=False,
+            isGraded=False,
             questions=[
                 Question(
-                    question_text="Which of the following options complete the missing lines in the binary search implementation?",
+                    question="Which of the following options complete the missing lines in the binary search implementation?",
                     type="mcq",
                     options=[
                         "right = mid + 1 # line 13, left = mid - 1 # line 15",
@@ -354,7 +354,7 @@ def seed_database():
                         "right = mid - left # line 13, left = mid + right # line 15",
                         "right = mid - right # line 13, left = mid + left # line 15"
                     ],
-                    correct_answer="right = mid - 1 # line 13, left = mid + 1 # line 15"
+                    correctAnswer="right = mid - 1 # line 13, left = mid + 1 # line 15"
                 )
             ]
         ).save()
@@ -364,13 +364,13 @@ def seed_database():
             week=week2_pdsa,
             title="Graded Quiz",
             type="assignment",
-            graded=True,
+            isGraded=True,
             questions=[
                 Question(
-                    question_text="What is the value of I when the list [1, 2, 3, 6, 7, 8] becomes completely sorted for the first time using selection sort?",
+                    question="What is the value of I when the list [1, 2, 3, 6, 7, 8] becomes completely sorted for the first time using selection sort?",
                     type="mcq",
                     options=["1", "2", "3", "4"],
-                    correct_answer="3"
+                    correctAnswer="3"
                 )
             ]
         ).save()
@@ -382,10 +382,10 @@ def seed_database():
             type="coding",
             language="Python",
             description="Write a Python function binarySearchIndexAndComparisons(L, k) that accepts a sorted list L and an integer k. The function should return a tuple (True/False, numComparisons) indicating whether k is in L and the number of comparisons made.",
-            code_template="def binarySearchIndexAndComparisons(L, k):\n    s = len(L)\n    if s < 1:\n        return (False, 0)\n    left = 0\n    right = s - 1\n    c = 0\n    while left <= right:\n        mid = (left + right) // 2\n        c += 1\n        if k == L[mid]:\n            return (True, c)\n        elif k < L[mid]:\n            right = mid - 1\n        else:\n            left = mid + 1\n    return (False, c)",
-            test_cases=[
-                TestCase(input_data="[2, 6, 8, 11, 17, 23, 33, 44, 46, 50, 65], 11", expected_output="(True, 3)"),
-                TestCase(input_data="[2, 6, 8, 11, 17, 23, 33, 44, 46, 50, 65], 100", expected_output="(False, 4)")
+            codeTemplate="def binarySearchIndexAndComparisons(L, k):\n    s = len(L)\n    if s < 1:\n        return (False, 0)\n    left = 0\n    right = s - 1\n    c = 0\n    while left <= right:\n        mid = (left + right) // 2\n        c += 1\n        if k == L[mid]:\n            return (True, c)\n        elif k < L[mid]:\n            right = mid - 1\n        else:\n            left = mid + 1\n    return (False, c)",
+            testCases=[
+                TestCase(inputData="[2, 6, 8, 11, 17, 23, 33, 44, 46, 50, 65], 11", expectedOutput="(True, 3)"),
+                TestCase(inputData="[2, 6, 8, 11, 17, 23, 33, 44, 46, 50, 65], 100", expectedOutput="(False, 4)")
             ]
         ).save()
 
@@ -395,7 +395,7 @@ def seed_database():
             type="coding",
             language="Python",
             description="Write a Python function findLargest(L) that accepts a list L of unique numbers, which is sorted and rotated n times (n is unknown). The function should return the largest number in the list. Try to give an O(log n) solution. Hint: One of the O(log n) solutions can be implemented using binary search and using 'first or last' element to know, the direction of searching further.",
-            code_template="""def findLargest(L):
+            codeTemplate="""def findLargest(L):
                 left = 0
                 s = len(L)
                 right = s - 1
@@ -422,12 +422,12 @@ def seed_database():
                     # Otherwise, the largest is in the right half
                     else:
                         left = mid + 1""",
-            test_cases=[
-                TestCase(input_data="[7, 8, 2, 4, 5]", expected_output="8"),
-                TestCase(input_data="[2, 4, 5, 7, 9]", expected_output="9"),
-                TestCase(input_data="[10, 20, 30, 40, 5]", expected_output="40"),
-                TestCase(input_data="[3, 4, 5, 1, 2]", expected_output="5"),
-                TestCase(input_data="[6]", expected_output="6")
+            testCases=[
+                TestCase(inputData="[7, 8, 2, 4, 5]", expectedOutput="8"),
+                TestCase(inputData="[2, 4, 5, 7, 9]", expectedOutput="9"),
+                TestCase(inputData="[10, 20, 30, 40, 5]", expectedOutput="40"),
+                TestCase(inputData="[3, 4, 5, 1, 2]", expectedOutput="5"),
+                TestCase(inputData="[6]", expectedOutput="6")
             ]
         ).save()
 
