@@ -13,7 +13,7 @@ from api.seed_db import seed_database
 load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True}})
+CORS(app, supports_credentials=True, origins=["https://deepseek-fe.vercel.app", "*"])
 
 # Configuration
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'
