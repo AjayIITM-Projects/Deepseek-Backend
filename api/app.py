@@ -54,5 +54,5 @@ api.add_resource(Test, '/test')
 app.register_blueprint(course_bp)
 
 if __name__ == '__main__':
-#     # seed_database()
+    seed_database()
     app.run(debug=True)
