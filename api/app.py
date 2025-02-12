@@ -44,7 +44,9 @@ def home():
     return "Welcome to the Flask API!"
 
 # Register API resources
-# api.add_resource(Login, '/login')
+api.add_resource(Login, '/login')
+api.add_resource(Logout, '/logout')
+api.add_resource(Profile, '/profile')
 # api.add_resource(Study, '/study')
 api.add_resource(CourseAPI, '/courses', '/course/<course_id>')
 api.add_resource(RegisteredCourses, '/registered-courses') #, '/register/courses')

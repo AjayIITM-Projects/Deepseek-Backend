@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Blueprint, make_response, request, jsonify
 from flask_restful import Resource
 from flask_bcrypt import check_password_hash
@@ -99,32 +100,80 @@ class RegisteredCourses(Resource):
             return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
 # Login Resource
-# class Login(Resource):
-#     def post(self):
-#         try:
-#             data = request.get_json()
-#             user = User.objects(username=username).first()
-#             if not user or not check_password_hash(user.password, password):
-#                 return jsonify({'error': 'Invalid credentials', 'code': 400})
+class Login(Resource):
+    def post(self):
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            name = data.get('name')
+            picture = data.get('picture')
 
-#             access_token = create_access_token(identity={
-#                 'user_id': str(user.id),
-#                 'role': user.role,
-#                 'email': user.email
-#             })
+            if not email:
+                return make_response(jsonify({"error": "Email is required"}), 400)
 
-#             return jsonify({
-#                 'token': access_token,
-#                 'code': 200,
-#                 'user_id': str(user.id),
-#                 'role': user.role,
-#                 'email': user.email,
-#                 'name': user.name,
-#                 'profilePictureUrl': user.profilePictureUrl if hasattr(user, 'profilePictureUrl') else ''
-#             })
-#         except Exception as e:
-#             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
+            # Check if user exists
+            user = User.objects(email=email).first()
 
+            # If user doesn't exist, create a new user
+            if not user:
+                user = User(
+                    role="student",
+                    email=email,
+                    name=name if name else email.split("@")[0].capitalize(),
+                    profilePictureUrl=picture if picture else "",
+                    registeredCourses=[]
+                )
+                user.save()
+
+            # Generate JWT token
+            access_token = create_access_token(
+                identity={'user_id': str(user.id), 'role': user.role, 'email': user.email},
+                expires_delta=timedelta(days=7)  # Set token expiry (7 days)
+            )
+
+            # Store token in HTTP-only cookie
+            response = make_response(jsonify({
+                'message': 'Login successful',
+                'user_id': str(user.id),
+                'role': user.role,
+                'email': user.email,
+                'name': user.name,
+                'profilePictureUrl': user.profilePictureUrl,
+            }), 200)
+            response.set_cookie(
+                "token", access_token, httponly=True, secure=False, samesite="Strict"
+            )
+
+            return response
+        except Exception as e:
+            return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
+
+class Logout(Resource):
+    def post(self):
+        response = make_response(jsonify({'message': 'Logged out successfully'}), 200)
+        response.set_cookie("token", "", expires=0)  # Clear token
+        return response
+
+class Profile(Resource):
+    @jwt_required()
+    def get(self):
+        try:
+            user_data = get_jwt_identity()
+            user = User.objects(email=user_data["email"]).first()
+
+            if not user:
+                return make_response(jsonify({"error": "User not found"}), 404)
+
+            return jsonify({
+                'user_id': str(user.id),
+                'role': user.role,
+                'email': user.email,
+                'name': user.name,
+                'profilePictureUrl': user.profilePictureUrl,
+            })
+
+        except Exception as e:
+            return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
 class CourseAPI(Resource):
     def get(self, course_id=None):
@@ -241,29 +290,3 @@ def get_transcript():
         return jsonify({"video_id": video_id, "transcript": transcript})
     except Exception as e:
         return jsonify({"error": "Could not fetch transcript", "message": str(e)}), 500
-
-
-# # Get the user registered courses
-# @course_bp.route('/registered-courses', methods=['GET'])
-# # @jwt_required()
-# def get_registered_courses():
-#     try:
-#         # current_user = get_jwt_identity()
-#         data = request.get_json()
-#         email = data['email']
-
-#         user = User.objects(email=email).first()
-#         if not user:
-#             return jsonify({"error": "User not found", "code": 404})
-
-#         registered_courses = user.registeredCourses  # Updated
-#         if not registered_courses:
-#             return jsonify({"registeredCourses": []})
-
-#         course_list = [
-#             {"id": str(course.id), "name": course.name, "description": course.description}  # Updated
-#             for course in registered_courses
-#         ]
-#         return jsonify({"registeredCourses": course_list})  # Updated
-#     except Exception as e:
-#         return jsonify({"error": "Something went wrong", "message": str(e)}), 500
