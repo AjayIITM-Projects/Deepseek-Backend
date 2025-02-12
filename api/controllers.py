@@ -141,7 +141,7 @@ class Login(Resource):
                 'profilePictureUrl': user.profilePictureUrl,
             }), 200)
             response.set_cookie(
-                "token", access_token, httponly=True, secure=False, samesite="Strict"
+                "token", access_token, httponly=True, secure=True, samesite="Strict", max_age=60*60*24*7
             )
 
             return response
