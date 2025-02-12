@@ -36,118 +36,122 @@ class Login(Resource):
         except Exception as e:
             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
 
-# Study Resource
-class Study(Resource):
-    def get(self):
+# # Study Resource
+# class Study(Resource):
+#     def get(self):
+#         try:
+#             courses = Course.objects()
+#             course_content = [
+                # {
+                #     'course_id': str(course.id),
+                #     'course_name': course.CourseName,
+                #     'course_description': course.CourseDescription,
+                #     'start_date': course.StartDate.strftime("%Y-%m-%d"),
+                #     'end_date': course.EndDate.strftime("%Y-%m-%d"),
+                # } for course in courses
+#             ]
+#             return jsonify({'study': course_content, 'code': 200})
+#         except Exception as e:
+#             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
+
+
+
+class CourseAPI(Resource):
+    def get(self, course_id=None):
         try:
-            courses = Course.objects()
-            course_content = [
-                {
-                    'course_id': str(course.id),
-                    'course_name': course.CourseName,
-                    'course_description': course.CourseDescription,
+            if course_id:
+                # Validate course_id
+                if not ObjectId.is_valid(course_id):
+                    return jsonify({'error': 'Invalid course ID format', 'code': 400})
+
+                # Fetch the specific course
+                course = Course.objects(id=course_id).first()
+                if not course:
+                    return jsonify({'error': 'Course not found', 'code': 404})
+
+                # Fetch announcements for the course
+                announcements = Announcement.objects(course=course)
+                announcement_list = [
+                    {
+                        "announcementId": str(ann.id),
+                        "message": ann.message,
+                        "date": ann.date.strftime("%Y-%m-%d")
+                    }
+                    for ann in announcements
+                ]
+
+                # Fetch weeks for the course
+                weeks = Week.objects(course=course)
+                week_list = []
+                for week in weeks:
+                    modules = Module.objects(week=week)
+                    module_list = []
+                    for module in modules:
+                        module_data = {
+                            "moduleId": str(module.id),
+                            "title": module.title,
+                            "type": module.type
+                        }
+                        if module.type == "video":
+                            module_data["url"] = module.url
+                        elif module.type == "coding":
+                            module_data.update({
+                                "language": module.language,
+                                "description": module.description,
+                                "codeTemplate": module.code_template,
+                                "testCases": [
+                                    {"input": tc.input_data, "expected": tc.expected_output} for tc in module.test_cases
+                                ]
+                            })
+                        elif module.type == "assignment":
+                            module_data.update({
+                                "questions": [
+                                    {
+                                        "question_text": q.question_text,
+                                        "type": q.type,
+                                        "options": q.options,
+                                        "correct": q.correct_answer
+                                    } 
+                                    for q in module.questions
+                                ],
+                                "graded": module.graded
+                            })
+                        elif module.type == "document":
+                            module_data.update({
+                                "docType": module.doc_type,
+                                "url": module.doc_url,
+                                "description": module.description
+                            })
+                        module_list.append(module_data)
+
+                    week_list.append({
+                        "weekId": str(week.id),
+                        "weekTitle": week.title,
+                        "deadline": week.deadline.strftime("%Y-%m-%d"),
+                        "modules": module_list
+                    })
+
+                # Construct the response
+                course_data = {
+                    "courseId": str(course.id),
+                    "title": course.CourseName,
+                    "description": course.CourseDescription,
+                    "announcements": announcement_list,
+                    "weeks": week_list
+                }
+                return jsonify(course_data)
+
+            else:
+                # Get all courses
+                courses = Course.objects()
+                course_list = [{
+                    'id': str(course.id),
+                    'name': course.CourseName,
+                    'description': course.CourseDescription,
                     'start_date': course.StartDate.strftime("%Y-%m-%d"),
                     'end_date': course.EndDate.strftime("%Y-%m-%d"),
-                } for course in courses
-            ]
-            return jsonify({'study': course_content, 'code': 200})
-        except Exception as e:
-            return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
-
-
-
-# Course API Resource
-class CourseAPI(Resource):
-    def get(self):
-        try:
-            courses = Course.objects()
-            course_list = [{"id": str(course.id), "name": course.CourseName, "description": course.CourseDescription} for course in courses]
-            return jsonify({"courses": course_list, "code": 200})
-        except Exception as e:
-            return jsonify({"error": "Something went wrong", "code": 500, "message": str(e)})
-
-    def get(self, course_id):
-        try:
-            # Validate course_id
-            if not ObjectId.is_valid(course_id):
-                return jsonify({'error': 'Invalid course ID format', 'code': 400})
-
-            # Fetch the specific course
-            course = Course.objects(id=course_id).first()
-            if not course:
-                return jsonify({'error': 'Course not found', 'code': 404})
-
-            # Fetch announcements for the course
-            announcements = Announcement.objects(course=course)
-            announcement_list = [
-                {
-                    "announcementId": str(ann.id),
-                    "message": ann.message,
-                    "date": ann.date.strftime("%Y-%m-%d")
-                }
-                for ann in announcements
-            ]
-
-            # Fetch weeks for the course
-            weeks = Week.objects(course=course)
-            week_list = []
-            for week in weeks:
-                modules = Module.objects(week=week)
-                module_list = []
-                for module in modules:
-                    module_data = {
-                        "moduleId": str(module.id),
-                        "title": module.title,
-                        "type": module.type
-                    }
-                    if module.type == "video":
-                        module_data["url"] = module.url
-                    elif module.type == "coding":
-                        module_data.update({
-                            "language": module.language,
-                            "description": module.description,
-                            "codeTemplate": module.code_template,
-                            "testCases": [
-                                {"input": tc.input_data, "expected": tc.expected_output} for tc in module.test_cases
-                            ]
-                        })
-                    elif module.type == "assignment":
-                        module_data.update({
-                            "questions": [
-                                {
-                                    "question_text": q.question_text,
-                                    "type": q.type,
-                                    "options": q.options,
-                                    "correct": q.correct_answer
-                                } 
-                                for q in module.questions
-                            ],
-                            "graded": module.graded
-                        })
-                    elif module.type == "document":
-                        module_data.update({
-                            "docType": module.doc_type,
-                            "url": module.doc_url,
-                            "description": module.description
-                        })
-                    module_list.append(module_data)
-
-                week_list.append({
-                    "weekId": str(week.id),
-                    "weekTitle": week.title,
-                    "deadline": week.deadline.strftime("%Y-%m-%d"),
-                    "modules": module_list
-                })
-
-            # Construct the response
-            course_data = {
-                "courseId": str(course.id),
-                "title": course.CourseName,
-                "description": course.CourseDescription,
-                "announcements": announcement_list,
-                "weeks": week_list
-            }
-            return jsonify(course_data)
+                } for course in courses]
+                return jsonify({"courses": course_list, "code": 200})
 
         except Exception as e:
             return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
