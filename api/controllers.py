@@ -8,15 +8,12 @@ from api.models import User, Course, Announcement, Week, Module, TestCase, Quest
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
 
-class Test(Resource):
-    def get(self):
-        return jsonify({"message": "Hello World!"})
-
 # Login Resource
 class Login(Resource):
     def post(self):
         try:
             data = request.get_json()
+            print(data)
             username = data.get('username')
             password = data.get('password')
 
@@ -62,6 +59,14 @@ from bson import ObjectId
 
 # Course API Resource
 class CourseAPI(Resource):
+    def get(self):
+        try:
+            courses = Course.objects()
+            course_list = [{"id": str(course.id), "name": course.CourseName, "description": course.CourseDescription} for course in courses]
+            return jsonify({"courses": course_list, "code": 200})
+        except Exception as e:
+            return jsonify({"error": "Something went wrong", "code": 500, "message": str(e)})
+
     def get(self, course_id):
         try:
             # Validate course_id
@@ -162,15 +167,6 @@ def get_transcript():
     except Exception as e:
         return jsonify({"error": "Could not fetch transcript", "message": str(e)}), 500
 
-# Get all available courses
-@course_bp.route('/courses', methods=['GET'])
-def get_courses():
-    try:
-        courses = Course.objects()
-        course_list = [{"id": str(course.id), "name": course.CourseName, "description": course.CourseDescription} for course in courses]
-        return jsonify({"courses": course_list, "code": 200})
-    except Exception as e:
-        return jsonify({"error": "Something went wrong", "code": 500, "message": str(e)})
 
 # Get the user registered courses
 @course_bp.route('/registered-courses', methods=['GET'])
