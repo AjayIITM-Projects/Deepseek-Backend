@@ -17,7 +17,7 @@ class RegisteredCourses(Resource):
     def get(self):
         try:
             data = request.get_json()
-            email = data['email']
+            email = request.args.get('email')
 
             user = User.objects(email=email).first()
             if not user:
