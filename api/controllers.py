@@ -169,7 +169,7 @@ class Profile(Resource):
                 'role': user.role,
                 'email': user.email,
                 'name': user.name,
-                'profilePictureUrl': user.profilePictureUrl,
+                'picture': user.profilePictureUrl,
             })
 
         except Exception as e:
