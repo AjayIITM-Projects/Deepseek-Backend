@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
@@ -9,14 +9,22 @@ from api.models import User, Course, Announcement, Week, Module, TestCase, Quest
 from dotenv import load_dotenv
 import os
 from api.seed_db import seed_database
+from flask_caching import Cache
 
 load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["https://deepseek-fe.vercel.app", "*"])
+CORS(app, supports_credentials=True, origins=["https://deepseek-fe.vercel.app","http://localhost:3000" "*"])
 
 # Configuration
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'
+
+# Cache configuration (Using simple in-memory caching)
+app.config['CACHE_TYPE'] = 'simple'
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # Cache timeout in seconds (5 minutes)
+
+# Initialize cache
+cache = Cache(app)
 
 # Initialize extensions
 bcrypt = Bcrypt(app)
@@ -45,8 +53,6 @@ def home():
 
 # Register API resources
 api.add_resource(Login, '/login')
-api.add_resource(Logout, '/logout')
-api.add_resource(Profile, '/profile')
 # api.add_resource(Study, '/study')
 api.add_resource(CourseAPI, '/courses', '/course/<course_id>')
 api.add_resource(RegisteredCourses, '/registered-courses') #, '/register/courses')
@@ -54,6 +60,6 @@ api.add_resource(RegisteredCourses, '/registered-courses') #, '/register/courses
 # Register Flask routes
 app.register_blueprint(course_bp)
 
-# if __name__ == '__main__':
-#     # seed_database()
-#     app.run(debug=True)
+if __name__ == '__main__':
+    # seed_database()
+    app.run(debug=True)
