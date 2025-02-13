@@ -9,11 +9,8 @@ from bson import ObjectId
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
 
-import requests
 from flask import request, jsonify, make_response
 from flask_restful import Resource
-from flask_jwt_extended import create_access_token
-from datetime import timedelta
 from api.models import User
 
 class Login(Resource):
@@ -49,9 +46,62 @@ class Login(Resource):
         except Exception as e:
             return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
-# ---------------------------
-# Register Route
-# ---------------------------
+# Create a Blueprint
+user_bp = Blueprint('user', __name__)
+
+class UsersAPI(Resource):
+    def get(self, user_id=None):
+        """Fetch all users or a specific user by ID"""
+        try:
+            if user_id:
+                if not ObjectId.is_valid(user_id):
+                    return make_response(jsonify({"error": "Invalid user ID"}), 400)
+
+                user = User.objects(id=user_id).first()
+                if not user:
+                    return make_response(jsonify({"error": "User not found"}), 404)
+
+                return jsonify({
+                    "id": str(user.id),
+                    "role": user.role,
+                    "email": user.email,
+                    "name": user.name,
+                    "profilePictureUrl": user.profilePictureUrl,
+                    "registeredCourses": [str(course.id) for course in user.registeredCourses]
+                })
+            
+            # Fetch all users
+            users = User.objects()
+            user_list = [{
+                "id": str(user.id),
+                "role": user.role,
+                "email": user.email,
+                "name": user.name,
+                "profilePictureUrl": user.profilePictureUrl,
+                "registeredCourses": [str(course.id) for course in user.registeredCourses]
+            } for user in users]
+
+            return jsonify(user_list)
+
+        except Exception as e:
+            return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
+
+    def delete(self, user_id):
+        """Delete a user by ID"""
+        try:
+            if not ObjectId.is_valid(user_id):
+                return make_response(jsonify({"error": "Invalid user ID"}), 400)
+
+            user = User.objects(id=user_id).first()
+            if not user:
+                return make_response(jsonify({"error": "User not found"}), 404)
+
+            user.delete()
+            return make_response(jsonify({"message": "User deleted successfully"}), 200)
+
+        except Exception as e:
+            return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
+
 
 class RegisteredCourses(Resource):
     def get(self):

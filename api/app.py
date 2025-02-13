@@ -47,7 +47,8 @@ def home():
 api.add_resource(Login, '/login')
 # api.add_resource(Study, '/study')
 api.add_resource(CourseAPI, '/courses', '/course/<course_id>')
-api.add_resource(RegisteredCourses, '/registered-courses') #, '/register/courses')
+api.add_resource(RegisteredCourses, '/registered-courses')
+api.add_resource(UsersAPI, '/users', '/user/<user_id>')
 
 # Register Flask routes
 app.register_blueprint(course_bp)
