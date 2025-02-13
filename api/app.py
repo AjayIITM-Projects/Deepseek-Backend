@@ -9,7 +9,6 @@ from api.models import User, Course, Announcement, Week, Module, TestCase, Quest
 from dotenv import load_dotenv
 import os
 from api.seed_db import seed_database
-from flask_caching import Cache
 
 load_dotenv()
 # Initialize Flask app
@@ -18,13 +17,6 @@ CORS(app, supports_credentials=True, origins=["https://deepseek-fe.vercel.app","
 
 # Configuration
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'
-
-# Cache configuration (Using simple in-memory caching)
-app.config['CACHE_TYPE'] = 'simple'
-app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # Cache timeout in seconds (5 minutes)
-
-# Initialize cache
-cache = Cache(app)
 
 # Initialize extensions
 bcrypt = Bcrypt(app)
