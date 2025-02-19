@@ -1,4 +1,4 @@
-from api.models import User, Course, Announcement, Week, Module, TestCase, Question  # Import models
+from api.models import User, Course, Announcement, Week, Module, TestCase, Question, ChatHistory, CodeSubmission  # Import models
 from datetime import datetime
 
 def seed_database():
@@ -428,5 +428,28 @@ def seed_database():
                 TestCase(inputData="[6]", expectedOutput="6")
             ]
         ).save()
+
+        # -----------------------------
+        # Seeding ChatHistory
+        # -----------------------------
+        chat1 = ChatHistory(
+            sessionId="session123",
+            user=user1,
+            query="How do I define a function in Python?",
+            response="Use the def keyword followed by the function name and parameters."
+        ).save()
+
+
+        # -----------------------------
+        # Seeding Code Submissions
+        # -----------------------------
+        code_submission1 = CodeSubmission(
+            user=user1,
+            question=None,  # Placeholder since Question is embedded
+            submittedCode="def add(a, b): return a + b",
+            output="5",
+            isCorrect=True
+        ).save()
+
 
         print("Database seeded successfully!")

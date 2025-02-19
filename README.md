@@ -7,6 +7,11 @@ git commit -m "message"
 git push origin main
 
 
+git push old-origin main
+git push new-origin main
+
+
+
 
 
 

@@ -11,6 +11,10 @@ class User(Document):
     name = fields.StringField(required=True, max_length=120)
     profilePictureUrl = fields.StringField(max_length=200)  # Optional
     registeredCourses = fields.ListField(fields.ReferenceField('Course'))  # Many-to-Many
+    # Added camelCase fields for controller compatibility
+    questionsAttempted = fields.ListField(fields.ReferenceField('Question'))  # Corrected to camelCase
+    modulesCompleted = fields.ListField(fields.ReferenceField('Module'))  # Corrected to camelCase
+    averageScore = fields.FloatField()  # Corrected to camelCase
 
 # -----------------------------
 # Course Model
@@ -22,13 +26,14 @@ class Course(Document):
     endDate = fields.DateTimeField(required=True)
     registeredUsers = fields.ListField(fields.ReferenceField(User))  # Many-to-Many
 
+
 # -----------------------------
 # Announcement Model
 # -----------------------------
 class Announcement(Document):
     course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
     message = fields.StringField(required=True, max_length=500)
-    date = fields.DateTimeField(default=datetime.utcnow)
+    date = fields.DateTimeField(default=datetime.now)
 
 # -----------------------------
 # Week Model
@@ -78,3 +83,27 @@ class Module(Document):
     # Document type
     docType = fields.StringField(max_length=20)
     docUrl = fields.StringField(max_length=300)
+
+
+class ChatHistory(Document):
+    # Modified to include sessionId as per the controller route
+    sessionId = fields.StringField(required=True, max_length=100)  # Assuming sessionId is a string
+    user = fields.ReferenceField('User', required=True, reverse_delete_rule=CASCADE)
+    query = fields.StringField(required=True, max_length=500)
+    response = fields.StringField(required=True, max_length=1000)
+    timestamp = fields.DateTimeField(default=datetime.now)
+
+    def __str__(self):
+        return f"ChatHistory(sessionId={self.sessionId}, query={self.query}, response={self.response})"
+
+
+class CodeSubmission(Document):
+    user = fields.ReferenceField('User', required=True, reverse_delete_rule=CASCADE)
+    question = fields.ReferenceField('Question', required=True, reverse_delete_rule=CASCADE)
+    submittedCode = fields.StringField(required=True)
+    output = fields.StringField()
+    isCorrect = fields.BooleanField(default=False)
+    timestamp = fields.DateTimeField(default=datetime.now)
+
+    def __str__(self):
+        return f"CodeSubmission(user={self.user}, question={self.question}, submittedCode={self.submittedCode}, output={self.output})"
