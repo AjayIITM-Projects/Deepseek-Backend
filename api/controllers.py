@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from flask import Blueprint, make_response, request, jsonify, session
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, unset_jwt_cookies
@@ -319,6 +319,7 @@ class YouTubeTranscriptAPI(Resource):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+
 class ChatbotInteractionAPI(Resource):
     def post(self):
         try:
@@ -330,25 +331,45 @@ class ChatbotInteractionAPI(Resource):
             if not query or not option:
                 return jsonify({"error": "Query and option are required"}), 400
 
+            # Fetch chat history only if sessionId is present
             chatHistory = []
             if sessionId:
                 chatHistory = ChatHistory.objects(sessionId=sessionId).order_by('timestamp')
 
-            responseText = "RAG API response based on history"
+            responseText = "RAG API response based on history"  # Simulating API response
 
+            # Save the new chat entry in the database
             chatEntry = ChatHistory(sessionId=sessionId, query=query, response=responseText)
             chatEntry.save()
 
+            # Prepare response data ensuring it is serializable
             response = {
                 "sessionId": sessionId,
                 "question": query,
                 "answer": responseText,
-                "chatHistory": [{"query": chat.query, "answer": chat.response} for chat in chatHistory]
+                "chatHistory": [
+                    {
+                        "query": chat.query,
+                        "answer": chat.response,
+                        "timestamp": chat.timestamp.isoformat(),  # Convert datetime to string
+                        "user": self.serialize_user(chat.user)  # Serialize the user reference
+                    }
+                    for chat in chatHistory
+                ]
             }
+
             return jsonify(response)
 
         except Exception as e:
+            # Return error with details
             return jsonify({"error": "Something went wrong", "message": str(e)}), 500
+
+    def serialize_user(self, user):
+        # Assuming you want to send user 'id' and 'name', adjust this as necessary
+        if user:
+            return {"id": str(user.id), "name": user.name}  # Change this to the fields you need
+        return None
+
 
 class UserStatisticsAPI(Resource):
     def get(self, userId):
@@ -385,20 +406,41 @@ class RunCodeAPI(Resource):
     def post(self):
         try:
             data = request.get_json()
-            questionId = data.get("questionId")
+            moduleId = data.get("moduleId")
+            questionIndex = data.get("questionIndex")
             code = data.get("code")
-            if not questionId or not code:
-                return jsonify({"error": "Question ID and code are required"}), 400
 
-            question = Question.objects(id=questionId).first()
-            if not question:
-                return jsonify({"error": "Question not found"}), 404
+            # Validate input
+            if not moduleId or questionIndex is None or not code:
+                return {"error": "moduleId, questionIndex, and code are required"}, 400
 
-            result = {"status": "success", "output": "Test case results here"}
-            return jsonify(result)
+            # Find the module containing the question
+            module = Module.objects(id=moduleId).first()
+            if not module:
+                return {"error": "Module not found"}, 404
+
+            # Check if the module has questions
+            if not hasattr(module, "questions") or not module.questions:
+                return {"error": "No questions found in this module"}, 404
+
+            # Get the specific question
+            try:
+                question = module.questions[questionIndex]
+            except IndexError:
+                return {"error": "Question not found at the specified index"}, 404
+
+            # Execute the code and compare with the correct answer
+            # (This is a placeholder; you'll need to implement code execution logic)
+            result = {
+                "status": "success",
+                "output": "Test case results here",
+                "isCorrect": True  # Placeholder
+            }
+            return result
 
         except Exception as e:
-            return jsonify({"error": "Something went wrong", "message": str(e)}), 500
+            return {"error": "Something went wrong", "message": str(e)}, 500
+
 
 class AdminStatisticsAPI(Resource):
     def get(self):
@@ -407,9 +449,9 @@ class AdminStatisticsAPI(Resource):
                 "totalUsers": User.objects.count(),
                 "totalModules": Module.objects.count(),
                 "activeUsers": User.objects(active=True).count(),
-                "questionsAttempted": sum(user.questionsAttempted for user in User.objects)
+                "questionsAttempted": sum(len(user.questionsAttempted) for user in User.objects)  # Sum the lengths of the lists
             }
-            return jsonify(statisticsData)
+            return statisticsData
 
         except Exception as e:
-            return jsonify({"error": "Something went wrong", "message": str(e)}), 500
+            return {"error": "Something went wrong", "message": str(e)}, 500

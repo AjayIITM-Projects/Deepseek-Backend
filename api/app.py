@@ -21,6 +21,25 @@ CORS(app, supports_credentials=True, origins=["https://deepseek-fe.vercel.app", 
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Ensure this is secure
 app.config['SECRET_KEY'] = os.getenv("FLASK_SECRET_KEY", "your_default_secret_key")  # Set a secret key for session management
 
+# @app.route("/test-auth", methods=["GET"])
+# # @jwt_required()  # Ensure the user is authenticated
+# def test_auth():
+#     # Retrieve Authorization header
+#     auth_header = request.headers.get("Authorization", "No Authorization Header")
+
+#     # Retrieve session data (if exists)
+#     session_data = dict(session) if session else "Session is empty"
+
+#     # Get the current user identity from the JWT
+#     current_user = get_jwt_identity()
+
+#     return jsonify({
+#         "Authorization Header": auth_header,
+#         "Session Data": session_data,
+#         "Authenticated User": current_user
+#     })
+
+
 # Initialize extensions
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
@@ -50,18 +69,18 @@ def home():
 # Register API resources
 api.add_resource(Login, '/login')
 # api.add_resource(Study, '/study')
-api.add_resource(CourseAPI, '/courses', '/course/<course_id>')
+api.add_resource(CourseAPI, '/courses', '/course/<courseId>')
 api.add_resource(RegisteredCourses, '/registered-courses')
-api.add_resource(UsersAPI, '/users', '/user/<user_id>')
+api.add_resource(UsersAPI, '/users', '/user/<userId>')
 
 # YouTube Transcript API Route
 api.add_resource(YouTubeTranscriptAPI, '/transcript')
 
 # Chatbot Interaction Route
-api.add_resource(ChatbotInteractionAPI, '/ask-chatbot')
+api.add_resource(ChatbotInteractionAPI, '/chatbot')
 
 # User Statistics Route
-api.add_resource(UserStatisticsAPI, '/stats/<userId>')
+api.add_resource(UserStatisticsAPI, '/user-statistics/<userId>')
 
 # Run Code Route for Testing
 api.add_resource(RunCodeAPI, '/run-code')
@@ -74,5 +93,5 @@ app.register_blueprint(course_bp)
 app.register_blueprint(user_bp)
 
 if __name__ == '__main__':
-    # seed_database()
+    seed_database()
     app.run(debug=True)
