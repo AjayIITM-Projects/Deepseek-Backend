@@ -93,5 +93,5 @@ app.register_blueprint(course_bp)
 app.register_blueprint(user_bp)
 
 if __name__ == '__main__':
-    seed_database()
+    # seed_database()
     app.run(debug=True)

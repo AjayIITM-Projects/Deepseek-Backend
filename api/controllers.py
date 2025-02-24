@@ -6,8 +6,6 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from api.models import User, Course, Announcement, Week, Module, TestCase, Question, ChatHistory, CodeSubmission # Import models
 from bson import ObjectId
 
-
-
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
 
@@ -55,8 +53,8 @@ class UsersAPI(Resource):
         """Fetch all users or a specific user by ID"""
         try:
             
-            if 'userId' not in session:  # If user is not logged in
-                return make_response(jsonify({"error": "Unauthorized, please log in"}), 401)
+            # if 'userId' not in session:  # If user is not logged in
+            #     return make_response(jsonify({"error": "Unauthorized, please log in"}), 401)
 
 
             if userId:
@@ -96,8 +94,8 @@ class UsersAPI(Resource):
         """Delete a user by ID"""
         try:
             
-            if 'userId' not in session:  # If user is not logged in
-                return make_response(jsonify({"error": "Unauthorized, please log in"}), 401)
+            # if 'userId' not in session:  # If user is not logged in
+            #     return make_response(jsonify({"error": "Unauthorized, please log in"}), 401)
 
             if not ObjectId.is_valid(userId):
                 return make_response(jsonify({"error": "Invalid user ID"}), 400)
@@ -202,19 +200,18 @@ class RegisteredCourses(Resource):
 class CourseAPI(Resource):
     def get(self, courseId=None):
         try:
-            
-            if 'userId' not in session:  # If user is not logged in
-                return jsonify({'error': 'Unauthorized, please log in', 'code': 401})
+            # if 'userId' not in session:  # If user is not logged in
+            #     return make_response(jsonify({'error': 'Unauthorized, please log in'}), 401)
             
             if courseId:
                 # Validate course_id
                 if not ObjectId.is_valid(courseId):
-                    return jsonify({'error': 'Invalid course ID format', 'code': 400})
+                    return make_response(jsonify({'error': 'Invalid course ID format'}), 400)
 
                 # Fetch the specific course
                 course = Course.objects(id=courseId).first()
                 if not course:
-                    return jsonify({'error': 'Course not found', 'code': 404})
+                    return make_response(jsonify({'error': 'Course not found'}), 404)
 
                 # Fetch announcements for the course
                 announcements = Announcement.objects(course=course)
@@ -245,9 +242,9 @@ class CourseAPI(Resource):
                             moduleData.update({
                                 "language": module.language,
                                 "description": module.description,
-                                "codeTemplate": module.codeTemplate,  # Updated to camel case
+                                "codeTemplate": module.codeTemplate,
                                 "testCases": [
-                                    {"inputData": tc.inputData, "expectedOutput": tc.expectedOutput} for tc in module.testCases  # Updated
+                                    {"inputData": tc.inputData, "expectedOutput": tc.expectedOutput} for tc in module.testCases
                                 ]
                             })
                         elif module.type == "assignment":
@@ -257,7 +254,7 @@ class CourseAPI(Resource):
                                         "question": q.question,
                                         "type": q.type,
                                         "options": q.options,
-                                        "correctAnswer": q.correctAnswer  # Updated
+                                        "correctAnswer": q.correctAnswer
                                     } 
                                     for q in module.questions
                                 ],
@@ -265,15 +262,15 @@ class CourseAPI(Resource):
                             })
                         elif module.type == "document":
                             moduleData.update({
-                                "docType": module.docType,  # Updated
-                                "docUrl": module.docUrl,  # Updated
+                                "docType": module.docType,
+                                "docUrl": module.docUrl,
                                 "description": module.description
                             })
                         moduleList.append(moduleData)
 
                     weekList.append({
                         "weekId": str(week.id),
-                        "title": week.title,  # Fixed naming
+                        "title": week.title,
                         "deadline": week.deadline.strftime("%Y-%m-%dT%H:%M:%SZ"),
                         "modules": moduleList
                     })
@@ -281,29 +278,29 @@ class CourseAPI(Resource):
                 # Construct the response
                 course_data = {
                     "courseId": str(course.id),
-                    "name": course.name,  # Updated
-                    "description": course.description,  # Updated
-                    "startDate": course.startDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
-                    "endDate": course.endDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
+                    "name": course.name,
+                    "description": course.description,
+                    "startDate": course.startDate.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "endDate": course.endDate.strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "announcements": announcementList,
                     "weeks": weekList
                 }
-                return jsonify(course_data)
+                return make_response(jsonify(course_data), 200)
 
             else:
                 # Get all courses
                 courses = Course.objects()
                 course_list = [{
                     'id': str(course.id),
-                    'name': course.name,  # Updated
-                    'description': course.description,  # Updated
-                    'startDate': course.startDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
-                    'endDate': course.endDate.strftime("%Y-%m-%dT%H:%M:%SZ"),  # Updated
+                    'name': course.name,
+                    'description': course.description,
+                    'startDate': course.startDate.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    'endDate': course.endDate.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 } for course in courses]
-                return jsonify({"courses": course_list, "code": 200})
+                return make_response(jsonify({"courses": course_list}), 200)
 
         except Exception as e:
-            return jsonify({'error': 'Something went wrong', 'code': 500, 'message': str(e)})
+            return make_response(jsonify({'error': 'Something went wrong', 'message': str(e)}), 500)
 
 
 class YouTubeTranscriptAPI(Resource):
@@ -375,8 +372,8 @@ class UserStatisticsAPI(Resource):
     def get(self, userId):
         try:
 
-            if 'userId' not in session:  # If user is not logged in
-                return jsonify({"error": "Unauthorized, please log in"}), 401
+            # if 'userId' not in session:  # If user is not logged in
+            #     return jsonify({"error": "Unauthorized, please log in"}), 401
 
             if not ObjectId.is_valid(userId):
                 return jsonify({"error": "Invalid user ID"}), 400
