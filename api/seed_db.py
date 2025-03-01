@@ -1,6 +1,48 @@
-from api.models import User, Course, Announcement, Week, Module, TestCase, Question, ChatHistory, CodeSubmission  # Import models
+from api.models import User, Course, VideoTranscript, Announcement, Week, Module, TestCase, Question, ChatHistory, CodeSubmission  # Import models
 from datetime import datetime
+import re
+from youtube_transcript_api import YouTubeTranscriptApi
 
+# Helper function to extract video ID from YouTube URL
+def extract_video_id(video_url):
+    """
+    Extracts the video ID from a YouTube URL.
+    Supports various YouTube URL formats.
+    """
+    regex = r"(?:v=|\/)([0-9A-Za-z_-]{11}).*"
+    match = re.search(regex, video_url)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError("Invalid YouTube URL")
+
+def fetch_and_save_transcripts(video_modules):
+    """
+    Fetches transcripts for a list of video modules and saves them in the database.
+    Skips saving if a transcript for the video already exists.
+    """
+    for module in video_modules:
+        try:
+            # Extract video ID from the URL
+            video_id = extract_video_id(module.url)
+            
+            # Check if a transcript for this video already exists
+            existing_transcript = VideoTranscript.objects(videoID=video_id).first()
+            if existing_transcript:
+                print(f"Transcript already exists for video URL: {module.url} (Video ID: {video_id})")
+                continue  # Skip fetching and saving
+            
+            # Fetch transcript using YouTubeTranscriptApi
+            transcript = YouTubeTranscriptApi.get_transcript(video_id)
+            
+            # Save the transcript in the database
+            video_transcript = VideoTranscript(videoID=video_id, transcript=transcript)
+            video_transcript.save()
+            print(f"Transcript saved for video URL: {module.url} (Video ID: {video_id})")
+        except Exception as e:
+            print(f"Error fetching transcript for video URL {module.url}: {str(e)}")
+
+            
 def seed_database():
     from api.app import app, bcrypt
     with app.app_context():
@@ -450,6 +492,11 @@ def seed_database():
             output="5",
             isCorrect=True
         ).save()
+
+
+        # Fetch all video-type modules and dynamically fetch their transcripts
+        video_modules = Module.objects(type="video")
+        fetch_and_save_transcripts(video_modules)
 
 
         print("Database seeded successfully!")

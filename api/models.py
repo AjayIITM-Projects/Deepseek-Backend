@@ -54,11 +54,12 @@ class TestCase(EmbeddedDocument):
 # -----------------------------
 # Embedded Question Model
 # -----------------------------
-class Question(EmbeddedDocument):  # ✅ Ensure it is an EmbeddedDocument
+class Question(EmbeddedDocument):  # Ensure it is an EmbeddedDocument
     question = fields.StringField(required=True, max_length=500)
     type = fields.StringField(required=True, choices=["mcq", "msq", "nat"])
     options = fields.ListField(fields.StringField())  # Store as an array
     correctAnswer = fields.StringField(required=True, max_length=200)
+    hint = fields.StringField(max_length=500) 
 
 
 # -----------------------------
@@ -69,7 +70,6 @@ class Module(Document):
     title = fields.StringField(required=True, max_length=120)
     type = fields.StringField(required=True, choices=["video", "coding", "assignment", "document"])
     
-
     # Video type
     url = fields.StringField(max_length=300)
 
@@ -81,7 +81,7 @@ class Module(Document):
 
     # Assignment type
     isGraded = fields.BooleanField(default=False)
-    questions = fields.EmbeddedDocumentListField(Question)  # Embedded Questions
+    questions = fields.EmbeddedDocumentListField(Question)  # Embedded Questions (optional)
 
     # Document type
     docType = fields.StringField(max_length=20)
@@ -100,8 +100,19 @@ class ChatHistory(Document):
 
 class CodeSubmission(Document):
     user = fields.ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
-    question = fields.EmbeddedDocumentField(Question)  # ✅ Store question inside submission
+    question = fields.EmbeddedDocumentField(Question)  #  Store question inside submission
     submittedCode = fields.StringField(required=True)
     output = fields.StringField()
     isCorrect = fields.BooleanField(default=False)
     timestamp = fields.DateTimeField(default=datetime.now)
+
+
+class VideoTranscript(Document):
+    videoID = fields.StringField(required=True, max_length=50, unique=True)  # Unique YouTube video ID
+    transcript = fields.ListField(fields.DictField(), required=True)  # Store transcript as a list of dictionaries
+    fetched_at = fields.DateTimeField(default=datetime.now)  # Timestamp for when the transcript was fetched
+
+    meta = {
+        'collection': 'video_transcripts',  # Explicit collection name in MongoDB
+        'indexes': ['videoID'],  # Index for faster lookups by videoID
+    }

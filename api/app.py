@@ -73,8 +73,8 @@ api.add_resource(CourseAPI, '/courses', '/course/<courseId>')
 api.add_resource(RegisteredCourses, '/registered-courses')
 api.add_resource(UsersAPI, '/users', '/user/<userId>')
 
-# YouTube Transcript API Route
-api.add_resource(YouTubeTranscriptAPI, '/transcript')
+# # YouTube Transcript API Route
+# api.add_resource(YouTubeTranscriptAPI, '/transcript')
 
 # Chatbot Interaction Route
 api.add_resource(ChatbotInteractionAPI, '/chatbot')
@@ -87,6 +87,13 @@ api.add_resource(RunCodeAPI, '/run-code')
 
 # Admin Statistics Route
 api.add_resource(AdminStatisticsAPI, '/admin-statistics')
+
+# Video Transcript Route
+api.add_resource(VideoTranscriptAPI, '/video-transcript')
+
+# {
+#   "video_ids": ["VIDEO_ID_1", "VIDEO_ID_2", "VIDEO_ID_3"]
+# }
 
 # Register Flask routes
 app.register_blueprint(course_bp)

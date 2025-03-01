@@ -3,8 +3,10 @@ from flask import Blueprint, make_response, request, jsonify, session
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, unset_jwt_cookies
 from youtube_transcript_api import YouTubeTranscriptApi
-from api.models import User, Course, Announcement, Week, Module, TestCase, Question, ChatHistory, CodeSubmission # Import models
+from api.models import User, Course, Announcement, Week, Module, TestCase, Question, VideoTranscript, ChatHistory, CodeSubmission # Import models
 from bson import ObjectId
+import re
+
 
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
@@ -254,7 +256,8 @@ class CourseAPI(Resource):
                                         "question": q.question,
                                         "type": q.type,
                                         "options": q.options,
-                                        "correctAnswer": q.correctAnswer
+                                        "correctAnswer": q.correctAnswer,
+                                        "hint": q.hint  # Added hint field for assignment type
                                     } 
                                     for q in module.questions
                                 ],
@@ -301,21 +304,87 @@ class CourseAPI(Resource):
 
         except Exception as e:
             return make_response(jsonify({'error': 'Something went wrong', 'message': str(e)}), 500)
+        
+
+# class YouTubeTranscriptAPI(Resource):
+#     def get(self):
+#         try:
+#             videoId = request.args.get('videoId')
+#             if not videoId:
+#                 return jsonify({"error": "Video ID is required"}), 400
+
+#             transcript = YouTubeTranscriptApi.get_transcript(videoId)
+#             return jsonify({"transcript": transcript})
+
+#         except Exception as e:
+#             return jsonify({"error": str(e)}), 500
 
 
-class YouTubeTranscriptAPI(Resource):
+# Helper function to extract video ID from YouTube URL
+def extract_video_id(video_url):
+    """
+    Extracts the video ID from a YouTube URL.
+    Supports various YouTube URL formats.
+    """
+    # Regex to match YouTube video IDs in different URL formats
+    regex = r"(?:v=|\/)([0-9A-Za-z_-]{11}).*"
+    match = re.search(regex, video_url)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError("Invalid YouTube URL")
+
+# Function to fetch and save transcripts
+def fetch_and_save_transcripts(video_urls):
+    """
+    Fetches transcripts for a list of video URLs and saves them in the database.
+    """
+    for video_url in video_urls:
+        try:
+            # Extract video ID from the URL
+            video_id = extract_video_id(video_url)
+            
+            # Fetch transcript using YouTubeTranscriptApi
+            transcript = YouTubeTranscriptApi.get_transcript(video_id)
+            
+            # Save the transcript in the database
+            video_transcript = VideoTranscript(videoID=video_id, transcript=transcript)
+            video_transcript.save()
+            print(f"Transcript saved for video URL: {video_url} (Video ID: {video_id})")
+        except Exception as e:
+            print(f"Error fetching transcript for video URL {video_url}: {str(e)}")
+
+# Route to fetch transcript for a specific video URL
+class VideoTranscriptAPI(Resource):
     def get(self):
         try:
-            videoId = request.args.get('videoId')
-            if not videoId:
-                return jsonify({"error": "Video ID is required"}), 400
+            video_url = request.args.get('videoURL')  # Get video URL from query parameter
+            if not video_url:
+                return make_response(jsonify({"error": "videoURL is required"}), 400)
 
-            transcript = YouTubeTranscriptApi.get_transcript(videoId)
-            return jsonify({"transcript": transcript})
+            # Extract video ID from the URL
+            video_id = extract_video_id(video_url)
 
+            # Fetch the transcript from the database
+            video_transcript = VideoTranscript.objects(videoID=video_id).first()
+            if not video_transcript:
+                return make_response(jsonify({"error": "Transcript not found for the given video URL"}), 404)
+
+            # Concatenate the full transcript from the chunked transcript
+            full_transcript = " ".join([chunk["text"] for chunk in video_transcript.transcript])
+
+            return make_response(jsonify({
+                "videoURL": video_url,
+                "videoID": video_transcript.videoID,
+                "transcript": full_transcript  # Return only the full transcript
+            }), 200)
+        except ValueError as e:
+            return make_response(jsonify({"error": "Invalid YouTube URL", "message": str(e)}), 400)
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
+# Register the VideoTranscriptAPI route
+course_bp.add_url_rule('/video-transcript', view_func=VideoTranscriptAPI.as_view('video_transcript_api'))
 
 class ChatbotInteractionAPI(Resource):
     def post(self):
@@ -404,29 +473,26 @@ class RunCodeAPI(Resource):
         try:
             data = request.get_json()
             moduleId = data.get("moduleId")
-            questionIndex = data.get("questionIndex")
             code = data.get("code")
 
             # Validate input
-            if not moduleId or questionIndex is None or not code:
-                return {"error": "moduleId, questionIndex, and code are required"}, 400
+            if not moduleId or not code:
+                return {"error": "moduleId and code are required"}, 400
 
-            # Find the module containing the question
+            # Find the module containing the code submission
             module = Module.objects(id=moduleId).first()
             if not module:
                 return {"error": "Module not found"}, 404
 
-            # Check if the module has questions
-            if not hasattr(module, "questions") or not module.questions:
-                return {"error": "No questions found in this module"}, 404
+            # Check if the module is of type "coding"
+            if module.type != "coding":
+                return {"error": "This module is not a coding module"}, 400
 
-            # Get the specific question
-            try:
-                question = module.questions[questionIndex]
-            except IndexError:
-                return {"error": "Question not found at the specified index"}, 404
+            # Check if the module has test cases
+            if not hasattr(module, "testCases") or not module.testCases:
+                return {"error": "No test cases found in this module"}, 404
 
-            # Execute the code and compare with the correct answer
+            # Execute the code and compare with the test cases
             # (This is a placeholder; you'll need to implement code execution logic)
             result = {
                 "status": "success",
