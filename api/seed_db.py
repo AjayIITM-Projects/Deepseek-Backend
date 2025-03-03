@@ -65,6 +65,15 @@ def seed_database():
         )
         user1.save()
 
+        user2 = User(
+            role="student",
+            email="student@example.com",
+            name="Student User",
+            profilePictureUrl="DP:)"
+        )
+        user2.save()
+
+
         # Create Course 1: MLF (Machine Learning Fundamentals)
         course1 = Course(
             name="Machine Learning Fundamentals (MLF)",

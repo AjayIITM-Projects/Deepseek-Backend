@@ -71,7 +71,7 @@ api.add_resource(Login, '/login')
 # api.add_resource(Study, '/study')
 api.add_resource(CourseAPI, '/courses', '/course/<courseId>')
 api.add_resource(RegisteredCourses, '/registered-courses')
-api.add_resource(UsersAPI, '/users', '/user/<userId>')
+api.add_resource(UsersAPI, '/users', '/user/<userId>', 'user/delete/<userId>')
 
 # # YouTube Transcript API Route
 # api.add_resource(YouTubeTranscriptAPI, '/transcript')
