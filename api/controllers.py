@@ -424,7 +424,7 @@ class ChatbotInteractionAPI(Resource):
                 ]
             }
 
-            return jsonify(response)
+            return jsonify(response)  # Ensure this is a JSON serializable object
 
         except Exception as e:
             # Return error with details

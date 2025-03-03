@@ -91,14 +91,11 @@ api.add_resource(AdminStatisticsAPI, '/admin-statistics')
 # Video Transcript Route
 api.add_resource(VideoTranscriptAPI, '/video-transcript')
 
-# {
-#   "video_ids": ["VIDEO_ID_1", "VIDEO_ID_2", "VIDEO_ID_3"]
-# }
 
 # Register Flask routes
 app.register_blueprint(course_bp)
 app.register_blueprint(user_bp)
 
 if __name__ == '__main__':
-    # seed_database()
+    seed_database()
     app.run(debug=True)

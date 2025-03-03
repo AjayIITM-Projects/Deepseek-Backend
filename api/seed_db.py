@@ -60,7 +60,8 @@ def seed_database():
         user1 = User(
             role="admin",
             email="admin@example.com",
-            name="Admin User"
+            name="Admin User",
+            profilePictureUrl="DP:)"
         )
         user1.save()
 
