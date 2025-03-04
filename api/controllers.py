@@ -393,19 +393,32 @@ class ChatbotInteractionAPI(Resource):
             query = data.get("query")
             option = data.get("option")
             sessionId = data.get("sessionId")
+            userEmail = data.get("userEmail")  # Use email instead of ID
 
+            # Validate input
             if not query or not option:
-                return jsonify({"error": "Query and option are required"}), 400
+                return {"error": "Query and option are required"}, 400
+
+            # Fetch the user from the database using their email
+            user = User.objects(email=userEmail).first()
+            if not user:
+                return {"error": "User not found"}, 404
 
             # Fetch chat history only if sessionId is present
             chatHistory = []
             if sessionId:
                 chatHistory = ChatHistory.objects(sessionId=sessionId).order_by('timestamp')
 
-            responseText = "RAG API response based on history"  # Simulating API response
+            # Simulate API response
+            responseText = "RAG API response based on history"
 
             # Save the new chat entry in the database
-            chatEntry = ChatHistory(sessionId=sessionId, query=query, response=responseText)
+            chatEntry = ChatHistory(
+                sessionId=sessionId,
+                user=user,  # Associate the chat with the user
+                query=query,
+                response=responseText
+            )
             chatEntry.save()
 
             # Prepare response data ensuring it is serializable
@@ -424,17 +437,25 @@ class ChatbotInteractionAPI(Resource):
                 ]
             }
 
-            return jsonify(response)  # Ensure this is a JSON serializable object
+            # Return the response directly (no need for jsonify)
+            return response, 200
 
         except Exception as e:
             # Return error with details
-            return jsonify({"error": "Something went wrong", "message": str(e)}), 500
+            return {"error": "Something went wrong", "message": str(e)}, 500
 
     def serialize_user(self, user):
-        # Assuming you want to send user 'id' and 'name', adjust this as necessary
+        # Serialize the user object
         if user:
-            return {"id": str(user.id), "name": user.name}  # Change this to the fields you need
+            return {
+                "id": str(user.id),
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "profilePictureUrl": user.profilePictureUrl
+            }
         return None
+
 
 
 class UserStatisticsAPI(Resource):
