@@ -28,6 +28,26 @@ def process_history(history):
     
     return formatted_history
 
+
+def get_module_type(moduleId):
+    # Fetch the module from the database using the moduleId
+    module = Module.objects(id=moduleId).first()
+    
+    if not module:
+        return "Module not found"
+    
+    prompt_option = ""
+    
+    if module.isGraded:
+        prompt_option = "Graded Question"
+    elif module.type == "assignment":
+        prompt_option = "Practice Question"
+    else:
+        prompt_option = "Learning Question"
+    
+    return prompt_option
+
+
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
 
@@ -412,20 +432,20 @@ class ChatbotInteractionAPI(Resource):
             data = request.get_json()
             query = data.get("query")
             history = data.get("history")
-            # sessionId = data.get("sessionId")
+            moduleId = data.get("moduleId")
             # userEmail = data.get("userEmail")  # Use email instead of ID
 
             # Validate input
             if not query or not history:
                 return {"error": "Query and history are required"}, 400
 
-            url = os.getenv("RAG_API") + "/ask"
             data = {
                 'query' : query,
-                'history' : process_history(history)
+                'history' : process_history(history),
+                'prompt_option' : get_module_type(moduleId)
             }
             
-            response = requests.post(url, json = data)
+            response = requests.post(os.getenv("RAG_API") + "/ask", json = data)
 
             # Check the status code and the response
             if response.status_code == 200:

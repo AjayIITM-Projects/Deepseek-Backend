@@ -261,6 +261,7 @@ def seed_database():
             title="Graded Programming: Goldbach's Conjecture",
             type="coding",
             language="Python",
+            isGraded = True,
             description="Write a function to find prime pairs that sum to an even number.",
             codeTemplate="def prime(n):\n    if n < 2:\n        return False\n    for i in range(2, n//2 + 1):\n        if n % i == 0:\n            return False\n    return True\n\ndef Goldbach(n):\n    Res = []\n    for i in range((n//2) + 1):\n        if prime(i) == True:\n            if prime(n - i) == True:\n                Res.append((i, n - i))\n    return Res",
             testCases=[
@@ -440,6 +441,7 @@ def seed_database():
             title="Graded Programming: Binary Search",
             type="coding",
             language="Python",
+            isGraded = True, 
             description="Write a Python function binarySearchIndexAndComparisons(L, k) that accepts a sorted list L and an integer k. The function should return a tuple (True/False, numComparisons) indicating whether k is in L and the number of comparisons made.",
             codeTemplate="def binarySearchIndexAndComparisons(L, k):\n    s = len(L)\n    if s < 1:\n        return (False, 0)\n    left = 0\n    right = s - 1\n    c = 0\n    while left <= right:\n        mid = (left + right) // 2\n        c += 1\n        if k == L[mid]:\n            return (True, c)\n        elif k < L[mid]:\n            right = mid - 1\n        else:\n            left = mid + 1\n    return (False, c)",
             testCases=[
@@ -453,6 +455,7 @@ def seed_database():
             title="Graded Programming: Find Largest in Rotated Sorted List",
             type="coding",
             language="Python",
+            isGraded = True,
             description="Write a Python function findLargest(L) that accepts a list L of unique numbers, which is sorted and rotated n times (n is unknown). The function should return the largest number in the list. Try to give an O(log n) solution. Hint: One of the O(log n) solutions can be implemented using binary search and using 'first or last' element to know, the direction of searching further.",
             codeTemplate="""def findLargest(L):
                 left = 0
