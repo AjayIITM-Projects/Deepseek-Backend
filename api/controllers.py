@@ -6,7 +6,27 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from api.models import User, Course, Announcement, Week, Module, TestCase, Question, VideoTranscript, ChatHistory, CodeSubmission # Import models
 from bson import ObjectId
 import re
+import os
+import requests
 
+def process_history(history):
+    # Remove the first entry of the history
+    history = history[1:]
+    
+    # Prepare the formatted result
+    formatted_history = []
+
+    # Iterate through the history and pair user query with bot response
+    for i in range(0, len(history), 2):
+        if i + 1 < len(history):  # Ensure there is a corresponding bot response
+            query = history[i]['text']  # User's message
+            answer = history[i + 1]['text']  # Bot's response
+            formatted_history.append({
+                'query': query,
+                'answer': answer
+            })
+    
+    return formatted_history
 
 # Create a Blueprint
 course_bp = Blueprint('course', __name__)
@@ -391,54 +411,71 @@ class ChatbotInteractionAPI(Resource):
         try:
             data = request.get_json()
             query = data.get("query")
-            option = data.get("option")
-            sessionId = data.get("sessionId")
-            userEmail = data.get("userEmail")  # Use email instead of ID
+            history = data.get("history")
+            # sessionId = data.get("sessionId")
+            # userEmail = data.get("userEmail")  # Use email instead of ID
 
             # Validate input
-            if not query or not option:
-                return {"error": "Query and option are required"}, 400
+            if not query or not history:
+                return {"error": "Query and history are required"}, 400
 
-            # Fetch the user from the database using their email
-            user = User.objects(email=userEmail).first()
-            if not user:
-                return {"error": "User not found"}, 404
-
-            # Fetch chat history only if sessionId is present
-            chatHistory = []
-            if sessionId:
-                chatHistory = ChatHistory.objects(sessionId=sessionId).order_by('timestamp')
-
-            # Simulate API response
-            responseText = "RAG API response based on history"
-
-            # Save the new chat entry in the database
-            chatEntry = ChatHistory(
-                sessionId=sessionId,
-                user=user,  # Associate the chat with the user
-                query=query,
-                response=responseText
-            )
-            chatEntry.save()
-
-            # Prepare response data ensuring it is serializable
-            response = {
-                "sessionId": sessionId,
-                "question": query,
-                "answer": responseText,
-                "chatHistory": [
-                    {
-                        "query": chat.query,
-                        "answer": chat.response,
-                        "timestamp": chat.timestamp.isoformat(),  # Convert datetime to string
-                        "user": self.serialize_user(chat.user)  # Serialize the user reference
-                    }
-                    for chat in chatHistory
-                ]
+            url = os.getenv("RAG_API")
+            data = {
+                'query' : query,
+                'history' : process_history(history)
             }
+            
+            response = requests.post(url, json = data)
 
-            # Return the response directly (no need for jsonify)
-            return response, 200
+            # Check the status code and the response
+            if response.status_code == 200:
+                print("Request was successful!")
+                print("Response:", response.json())  # Assuming the response is JSON
+                return response.json(),200
+            else:
+                print(f"Request failed with status code {response.status_code}")
+                print("Error response:", response.text)
+                return response.text, response.status_code
+            # # Fetch the user from the database using their email
+            # user = User.objects(email=userEmail).first()
+            # if not user:
+            #     return {"error": "User not found"}, 404
+
+            # # Fetch chat history only if sessionId is present
+            # chatHistory = []
+            # if sessionId:
+            #     chatHistory = ChatHistory.objects(sessionId=sessionId).order_by('timestamp')
+
+            # # Simulate API response
+            # responseText = "RAG API response based on history"
+
+            # # Save the new chat entry in the database
+            # chatEntry = ChatHistory(
+            #     sessionId=sessionId,
+            #     user=user,  # Associate the chat with the user
+            #     query=query,
+            #     response=responseText
+            # )
+            # chatEntry.save()
+
+            # # Prepare response data ensuring it is serializable
+            # response = {
+            #     "sessionId": sessionId,
+            #     "question": query,
+            #     "answer": responseText,
+            #     "chatHistory": [
+            #         {
+            #             "query": chat.query,
+            #             "answer": chat.response,
+            #             "timestamp": chat.timestamp.isoformat(),  # Convert datetime to string
+            #             "user": self.serialize_user(chat.user)  # Serialize the user reference
+            #         }
+            #         for chat in chatHistory
+            #     ]
+            # }
+
+            # # Return the response directly (no need for jsonify)
+            # return response, 200
 
         except Exception as e:
             # Return error with details

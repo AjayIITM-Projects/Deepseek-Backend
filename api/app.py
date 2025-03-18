@@ -92,6 +92,7 @@ api.add_resource(AdminStatisticsAPI, '/admin-statistics')
 api.add_resource(VideoTranscriptAPI, '/video-transcript')
 
 
+
 # Register Flask routes
 app.register_blueprint(course_bp)
 app.register_blueprint(user_bp)
