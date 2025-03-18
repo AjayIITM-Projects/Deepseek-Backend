@@ -419,7 +419,7 @@ class ChatbotInteractionAPI(Resource):
             if not query or not history:
                 return {"error": "Query and history are required"}, 400
 
-            url = os.getenv("RAG_API")
+            url = os.getenv("RAG_API") + "/ask"
             data = {
                 'query' : query,
                 'history' : process_history(history)
