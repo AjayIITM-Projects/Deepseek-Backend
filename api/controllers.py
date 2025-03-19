@@ -601,7 +601,6 @@ class AdminStatisticsAPI(Resource):
         
 
 
-
 @course_bp.route('/submit/code', methods=['POST'])
 def submit_code():
     """
