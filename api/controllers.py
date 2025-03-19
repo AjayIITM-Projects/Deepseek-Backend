@@ -8,6 +8,8 @@ from bson import ObjectId
 import re
 import os
 import requests
+import subprocess
+import sys
 
 def process_history(history):
     # Remove the first entry of the history
@@ -37,7 +39,7 @@ def get_module_type(moduleId):
         return "Module not found"
     
     prompt_option = ""
-    
+
     if module.isGraded:
         prompt_option = "Graded Question"
     elif module.type == "assignment":
@@ -596,3 +598,120 @@ class AdminStatisticsAPI(Resource):
 
         except Exception as e:
             return {"error": "Something went wrong", "message": str(e)}, 500
+        
+
+
+
+@course_bp.route('/submit/code', methods=['POST'])
+def submit_code():
+    """
+    API endpoint to handle code submission.
+    Expects JSON payload with:
+    - email: Email of the user submitting the code
+    - moduleId: ID of the module (coding problem)
+    - code: The submitted code as a string
+    """
+    try:
+        # Parse the request data
+        data = request.get_json()
+        email = data.get('email')
+        module_id = data.get('moduleId')
+        submitted_code = data.get('code')
+
+        if not email or not module_id or not submitted_code:
+            return jsonify({"error": "Missing required fields (email, moduleId, code)"}), 400
+
+        # Fetch the user from the database using email
+        user = User.objects(email=email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Fetch the module (coding problem) from the database
+        module = Module.objects(id=module_id).first()
+        if not module or module.type != "coding":
+            return jsonify({"error": "Invalid module or module is not a coding problem"}), 404
+
+        # Fetch the test cases for the module
+        test_cases = module.testCases
+        if not test_cases:
+            return jsonify({"error": "No test cases found for this module"}), 404
+
+        # Validate the syntax of the submitted code
+        try:
+            compile(submitted_code, '<string>', 'exec')
+        except SyntaxError as e:
+            return jsonify({
+                "error": "Syntax error in the submitted code",
+                "syntaxError": str(e),
+                "line": e.lineno,
+                "offset": e.offset,
+                "message": e.msg
+            }), 400
+
+        # Prepare the results
+        results = []
+        all_passed = True
+        passed_count = 0  # Counter for passed test cases
+
+        # Execute the code for each test case
+        for test_case in test_cases:
+            input_data = test_case.inputData
+            expected_output = test_case.expectedOutput
+
+            try:
+                # Execute the user's code with the input data
+                process = subprocess.run(
+                    [sys.executable, "-c", submitted_code],
+                    input=input_data,
+                    text=True,
+                    capture_output=True
+                )
+
+                # Get the output from the executed code
+                actual_output = process.stdout.strip()
+
+                # Compare the actual output with the expected output
+                is_correct = (actual_output == expected_output)
+                if is_correct:
+                    passed_count += 1  # Increment passed count
+                else:
+                    all_passed = False
+
+                # Store the result for this test case
+                results.append({
+                    "input": input_data,
+                    "expectedOutput": expected_output,
+                    "actualOutput": actual_output,
+                    "isCorrect": is_correct
+                })
+
+            except Exception as e:
+                # Handle execution errors (e.g., runtime errors)
+                return jsonify({"error": f"Code execution failed: {str(e)}"}), 500
+
+        # Save the submission to the database
+        code_submission = CodeSubmission(
+            user=user,  # Reference to the User document
+            question=None,  # You can embed the question if needed
+            submittedCode=submitted_code,
+            output=str(results),  # Store the results as a string
+            isCorrect=all_passed
+        )
+        code_submission.save()
+
+        # Update the user's attempted questions or modules if needed
+        if module not in user.modulesCompleted:
+            user.modulesCompleted.append(module)
+            user.save()
+
+        # Return the results to the user
+        return jsonify({
+            "message": "Code submitted successfully",
+            "allPassed": all_passed,
+            "passedCount": passed_count,  # Number of test cases passed
+            "totalTestCases": len(test_cases),  # Total number of test cases
+            "results": results
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
