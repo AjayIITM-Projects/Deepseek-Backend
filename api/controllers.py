@@ -423,9 +423,7 @@ class ChatbotInteractionAPI(Resource):
             
             if not query or not history:
                 return {"error": "Query and history are required"}, 400
-            
-            # Extracting the last question from history
-            question = history[-1]['text']
+
             
             # Retrieve the module based on moduleId
             module = Module.objects(id=moduleId).first()
@@ -440,7 +438,7 @@ class ChatbotInteractionAPI(Resource):
 
             # If an entry exists, append the new question to the existing array of questions
             if existing_question_entry:
-                existing_question_entry.update(push__questions=question)
+                existing_question_entry.update(push__questions=query)
                 # return {"message": "Question added to existing entry"}, 200
             else:
                 # If no entry exists, create a new entry
@@ -449,7 +447,7 @@ class ChatbotInteractionAPI(Resource):
                     week=module.week,
                     course=module.week.course,
                     date=datetime.now().date(),
-                    questions=[question],  # Initialize with the current question
+                    questions=[query],  # Initialize with the current question
                 )
                 new_question_entry.save()
                 # return {"message": "New question entry created"}, 201
