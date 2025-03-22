@@ -16,7 +16,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Enable CORS for specified origins
-CORS(app, supports_credentials=True, origins=["https://deepseek-fe.vercel.app", "http://localhost:3000", "*"])
+CORS(app, supports_credentials=True, origins=["*"])
 
 # Configuration
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Ensure this is secure
@@ -80,7 +80,7 @@ app.register_blueprint(course_bp)
 app.register_blueprint(user_bp)
 requests.get(os.getenv("RAG_API"))
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     # seed_database()
     # requests.get(os.getenv("RAG_API"))
     # app.run(debug=True)
