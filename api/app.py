@@ -78,8 +78,9 @@ api.add_resource(VideoTranscriptAPI, '/video-transcript')
 # Register Flask routes
 app.register_blueprint(course_bp)
 app.register_blueprint(user_bp)
+requests.get(os.getenv("RAG_API"))
 
 if __name__ == '__main__':
-    seed_database()
-    requests.get(os.getenv("RAG_API"))
-    app.run(debug=True)
+    # seed_database()
+    # requests.get(os.getenv("RAG_API"))
+    # app.run(debug=True)
