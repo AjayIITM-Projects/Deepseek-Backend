@@ -155,7 +155,8 @@ def seed_database():
                         "Checking whether an email is spam or not.",
                         "Identify the gender of online customers based on buying behaviour."
                     ],
-                    correctAnswer="Grouping tweets based on topic similarity"
+                    correctAnswer="Grouping tweets based on topic similarity",
+                    hint="Unsupervised learning deals with finding hidden patterns or structures in data without labeled outputs."
                 ),
                 Question(
                     question="Which of the following is/are incorrect?",
@@ -166,7 +167,8 @@ def seed_database():
                         "1(0.5 ∉ ℝ) = 0",
                         "1(2 ∈ (2, 3, 4)) = 0"
                     ],
-                    correctAnswer="1(2 ∈ (2, 3, 4)) = 0"
+                    correctAnswer="1(2 ∈ (2, 3, 4)) = 0",
+                    hint="Carefully analyze the logical expressions and remember that ℝ represents the set of real numbers."
                 ),
                 Question(
                     question="Which of the following functions corresponds to a classification model?",
@@ -176,10 +178,12 @@ def seed_database():
                         "f : ℝ^d → { +1, -1 }",
                         "f : ℝ^d → ℝ^d'"
                     ],
-                    correctAnswer="f : ℝ^d → { +1, -1 }"
+                    correctAnswer="f : ℝ^d → { +1, -1 }",
+                    hint="Classification models output discrete categories rather than continuous values."
                 )
             ]
         ).save()
+
 
         # Graded Quiz for MLF
         module5_mlf = Module(
@@ -196,7 +200,8 @@ def seed_database():
                         "1/n ∑|f(x_i) - y_i|",
                         "1/n ∑1(f(x_i) ≠ y_i)"
                     ],
-                    correctAnswer="1/n ∑1(f(x_i) ≠ y_i)"
+                    correctAnswer="1/n ∑1(f(x_i) ≠ y_i)",
+                    hint="Regression models predict continuous values, so their loss functions should reflect the magnitude of errors rather than discrete classification errors."
                 ),
                 Question(
                     question="Identify which of the following requires use of classification technique.",
@@ -207,10 +212,12 @@ def seed_database():
                         "Predicting whether an email is spam or not.",
                         "Predicting the number of Covid cases on a given day based on previous month data."
                     ],
-                    correctAnswer="Predicting whether an email is spam or not."
+                    correctAnswer="Predicting whether an email is spam or not.",
+                    hint="Classification problems deal with categorizing inputs into discrete labels, while regression predicts continuous numerical values."
                 )
             ]
         ).save()
+
 
         # Create modules for Week 1 of Course 2 (PDSA)
         module1_pdsa = Module(
@@ -250,10 +257,12 @@ def seed_database():
                         "def h(n): for i in range(1, n + 1): if i * i == n: return True return False",
                         "def h(n): for i in range(1, n + 1): if i * i > n: break elif i * i == n: return True return False"
                     ],
-                    correctAnswer="def h(n): return (n ** .5) == int(n ** .5)"
+                    correctAnswer="def h(n): return (n ** .5) == int(n ** .5)",
+                    hint="A perfect square is a number whose square root is an integer. Consider checking whether the square root of 'n' is equal to its integer conversion."
                 )
             ]
         ).save()
+
 
         # Graded Programming for PDSA
         module5_pdsa = Module(
@@ -263,6 +272,7 @@ def seed_database():
             language="Python",
             isGraded = True,
             description="Write a function to find prime pairs that sum to an even number.",
+            hint = "Try breaking the problem into checking prime numbers and finding pairs.",
             codeTemplate="def prime(n):\n    if n < 2:\n        return False\n    for i in range(2, n//2 + 1):\n        if n % i == 0:\n            return False\n    return True\n\ndef Goldbach(n):\n    Res = []\n    for i in range((n//2) + 1):\n        if prime(i) == True:\n            if prime(n - i) == True:\n                Res.append((i, n - i))\n    return Res",
             testCases=[
                 TestCase(inputData="12", expectedOutput="[(5, 7)]"),
@@ -297,7 +307,6 @@ def seed_database():
             url="https://www.youtube.com/embed/En15LA59Fsw"
         ).save()
 
-        # Practice Quiz for Week 2 of MLF
         module4_week2_mlf = Module(
             week=week2_mlf,
             title="Practice Quiz",
@@ -315,7 +324,8 @@ def seed_database():
                         "A ∩ B = {50}",
                         "A^C ∩ B^C = [10, 30] ∪ [91, 100]"
                     ],
-                    correctAnswer="A ∩ B = ∅"
+                    correctAnswer="A ∩ B = ∅",
+                    hint="Carefully analyze the intersections and complements of sets. A ∩ B represents the common elements between A and B."
                 ),
                 Question(
                     question="Consider two 6-dimensional vectors x and y. Which of the following terms are equivalent? (i) x^T y, (ii) x y, (iii) ∑(x_i y_i)",
@@ -326,12 +336,13 @@ def seed_database():
                         "Only (ii) and (iii)",
                         "(i), (ii), and (iii)"
                     ],
-                    correctAnswer="Only (i) and (iii)"
+                    correctAnswer="Only (i) and (iii)",
+                    hint="The dot product of two vectors is computed by summing the element-wise product of their components."
                 )
             ]
         ).save()
 
-        # Graded Quiz for Week 2 of MLF
+
         module5_week2_mlf = Module(
             week=week2_mlf,
             title="Graded Quiz",
@@ -347,7 +358,8 @@ def seed_database():
                         "sign(x - 2)",
                         "sin(x)"
                     ],
-                    correctAnswer="sin(x)"
+                    correctAnswer="sin(x)",
+                    hint="A function is continuous if it has no abrupt jumps, breaks, or asymptotes in its domain."
                 ),
                 Question(
                     question="Regarding a d-dimensional vector x, which of the following is not equivalent to the rest?",
@@ -358,10 +370,12 @@ def seed_database():
                         "∑(x_i^2)",
                         "x x^T"
                     ],
-                    correctAnswer="x x^T"
+                    correctAnswer="x x^T",
+                    hint="Think about the dimensions of the resulting matrices for each operation. Some represent scalars, while others result in matrices."
                 )
             ]
         ).save()
+
 
 
 
@@ -414,10 +428,12 @@ def seed_database():
                         "right = mid - left # line 13, left = mid + right # line 15",
                         "right = mid - right # line 13, left = mid + left # line 15"
                     ],
-                    correctAnswer="right = mid - 1 # line 13, left = mid + 1 # line 15"
+                    correctAnswer="right = mid - 1 # line 13, left = mid + 1 # line 15",
+                    hint="Remember that in binary search, you reduce the search space by adjusting `left` or `right` based on the comparison with `mid`."
                 )
             ]
         ).save()
+
 
         # Graded Quiz for Week 2 of PDSA
         module6_week2_pdsa = Module(
@@ -430,24 +446,26 @@ def seed_database():
                     question="What is the value of I when the list [1, 2, 3, 6, 7, 8] becomes completely sorted for the first time using selection sort?",
                     type="mcq",
                     options=["1", "2", "3", "4"],
-                    correctAnswer="3"
+                    correctAnswer="3",
+                    hint="In selection sort, the smallest element is placed in its correct position in each iteration. Count the swaps until the list is fully sorted."
                 )
             ]
         ).save()
 
-        # Graded Programming for Week 2 of PDSA
+
         module7_week2_pdsa = Module(
             week=week2_pdsa,
             title="Graded Programming: Binary Search",
             type="coding",
             language="Python",
-            isGraded = True, 
+            isGraded=True, 
             description="Write a Python function binarySearchIndexAndComparisons(L, k) that accepts a sorted list L and an integer k. The function should return a tuple (True/False, numComparisons) indicating whether k is in L and the number of comparisons made.",
             codeTemplate="def binarySearchIndexAndComparisons(L, k):\n    s = len(L)\n    if s < 1:\n        return (False, 0)\n    left = 0\n    right = s - 1\n    c = 0\n    while left <= right:\n        mid = (left + right) // 2\n        c += 1\n        if k == L[mid]:\n            return (True, c)\n        elif k < L[mid]:\n            right = mid - 1\n        else:\n            left = mid + 1\n    return (False, c)",
             testCases=[
                 TestCase(inputData="[2, 6, 8, 11, 17, 23, 33, 44, 46, 50, 65], 11", expectedOutput="(True, 3)"),
                 TestCase(inputData="[2, 6, 8, 11, 17, 23, 33, 44, 46, 50, 65], 100", expectedOutput="(False, 4)")
-            ]
+            ],
+            hint="Binary search works by dividing the list in half iteratively. Count the number of comparisons needed to determine if the target element exists."
         ).save()
 
         module8_week2_pdsa = Module(
@@ -455,8 +473,8 @@ def seed_database():
             title="Graded Programming: Find Largest in Rotated Sorted List",
             type="coding",
             language="Python",
-            isGraded = True,
-            description="Write a Python function findLargest(L) that accepts a list L of unique numbers, which is sorted and rotated n times (n is unknown). The function should return the largest number in the list. Try to give an O(log n) solution. Hint: One of the O(log n) solutions can be implemented using binary search and using 'first or last' element to know, the direction of searching further.",
+            isGraded=True,
+            description="Write a Python function findLargest(L) that accepts a list L of unique numbers, which is sorted and rotated n times (n is unknown). The function should return the largest number in the list. Try to give an O(log n) solution.",
             codeTemplate="""def findLargest(L):
                 left = 0
                 s = len(L)
@@ -490,8 +508,10 @@ def seed_database():
                 TestCase(inputData="[10, 20, 30, 40, 5]", expectedOutput="40"),
                 TestCase(inputData="[3, 4, 5, 1, 2]", expectedOutput="5"),
                 TestCase(inputData="[6]", expectedOutput="6")
-            ]
+            ],
+            hint="This problem can be solved in O(log n) using a binary search approach. Compare the middle element with the first or last element to determine which half to search next."
         ).save()
+
 
         # -----------------------------
         # Seeding ChatHistory

@@ -59,7 +59,8 @@ class Question(EmbeddedDocument):  # Ensure it is an EmbeddedDocument
     type = fields.StringField(required=True, choices=["mcq", "msq", "nat"])
     options = fields.ListField(fields.StringField())  # Store as an array
     correctAnswer = fields.StringField(required=True, max_length=200)
-    hint = fields.StringField(max_length=500) 
+    hint = fields.StringField(max_length=500)  # Added hint field
+
 
 
 # -----------------------------
@@ -78,6 +79,7 @@ class Module(Document):
     description = fields.StringField(max_length=500)
     codeTemplate = fields.StringField()
     testCases = fields.EmbeddedDocumentListField(TestCase)  # Embedded Test Cases
+    hint = fields.StringField(max_length=500, default="No hint available.")  # Added hint for coding modules
 
     # Assignment type
     isGraded = fields.BooleanField(default=False)
@@ -88,6 +90,7 @@ class Module(Document):
     docUrl = fields.StringField(max_length=300)
 
 
+
 class ChatHistory(Document):
     # Modified to include sessionId as per the controller route
     sessionId = fields.StringField(required=True, max_length=100)  # Assuming sessionId is a string
@@ -96,6 +99,13 @@ class ChatHistory(Document):
     response = fields.StringField(required=True, max_length=1000)
     timestamp = fields.DateTimeField(default=datetime.now)
 
+    
+class ChatQuestions(Document):
+    user = fields.ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
+    course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
+    week = fields.ReferenceField(Week, required=True, reverse_delete_rule=CASCADE)
+    date = fields.DateField(default=datetime.now().date())
+    questions = fields.ListField(fields.StringField())
     
 
 class CodeSubmission(Document):

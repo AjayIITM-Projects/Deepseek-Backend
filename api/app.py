@@ -9,6 +9,7 @@ from api.models import User, Course, Announcement, Week, Module, TestCase, Quest
 from dotenv import load_dotenv
 import os
 from api.seed_db import seed_database
+import requests
 
 load_dotenv()
 # Initialize Flask app
@@ -20,25 +21,6 @@ CORS(app, supports_credentials=True, origins=["https://deepseek-fe.vercel.app", 
 # Configuration
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Ensure this is secure
 app.config['SECRET_KEY'] = os.getenv("FLASK_SECRET_KEY", "your_default_secret_key")  # Set a secret key for session management
-
-# @app.route("/test-auth", methods=["GET"])
-# # @jwt_required()  # Ensure the user is authenticated
-# def test_auth():
-#     # Retrieve Authorization header
-#     auth_header = request.headers.get("Authorization", "No Authorization Header")
-
-#     # Retrieve session data (if exists)
-#     session_data = dict(session) if session else "Session is empty"
-
-#     # Get the current user identity from the JWT
-#     current_user = get_jwt_identity()
-
-#     return jsonify({
-#         "Authorization Header": auth_header,
-#         "Session Data": session_data,
-#         "Authenticated User": current_user
-#     })
-
 
 # Initialize extensions
 bcrypt = Bcrypt(app)
@@ -98,5 +80,6 @@ app.register_blueprint(course_bp)
 app.register_blueprint(user_bp)
 
 if __name__ == '__main__':
-    # seed_database()
+    seed_database()
+    requests.get(os.getenv("RAG_API"))
     app.run(debug=True)

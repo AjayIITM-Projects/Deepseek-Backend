@@ -3,7 +3,7 @@ from flask import Blueprint, make_response, request, jsonify, session
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, unset_jwt_cookies
 from youtube_transcript_api import YouTubeTranscriptApi
-from api.models import User, Course, Announcement, Week, Module, TestCase, Question, VideoTranscript, ChatHistory, CodeSubmission # Import models
+from api.models import User, Course, Announcement, Week, Module, TestCase, Question, VideoTranscript, ChatHistory, CodeSubmission, ChatQuestions # Import models
 from bson import ObjectId
 import re
 import os
@@ -30,7 +30,6 @@ def process_history(history):
     
     return formatted_history
 
-
 def get_module_type(moduleId):
     # Fetch the module from the database using the moduleId
     module = Module.objects(id=moduleId).first()
@@ -41,16 +40,14 @@ def get_module_type(moduleId):
     prompt_option = ""
 
     if module.isGraded:
-        prompt_option = "Graded Question"
+        prompt_option = "graded"
     elif module.type == "assignment":
-        prompt_option = "Practice Question"
+        prompt_option = "practice"
     else:
-        prompt_option = "Learning Question"
+        prompt_option = "learning"
     
     return prompt_option
 
-
-# Create a Blueprint
 course_bp = Blueprint('course', __name__)
 
 class Login(Resource):
@@ -89,7 +86,6 @@ class Login(Resource):
         except Exception as e:
             return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
-# Create a Blueprint
 user_bp = Blueprint('user', __name__)
 
 class UsersAPI(Resource):
@@ -153,7 +149,6 @@ class UsersAPI(Resource):
 
         except Exception as e:
             return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
-
 
 class RegisteredCourses(Resource):
     def get(self):
@@ -240,7 +235,6 @@ class RegisteredCourses(Resource):
         except Exception as e:
             return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)
 
-
 class CourseAPI(Resource):
     def get(self, courseId=None):
         try:
@@ -287,6 +281,7 @@ class CourseAPI(Resource):
                                 "language": module.language,
                                 "description": module.description,
                                 "codeTemplate": module.codeTemplate,
+                                "hint": module.hint or "No hint available.",  # Added hint for coding modules
                                 "testCases": [
                                     {"inputData": tc.inputData, "expectedOutput": tc.expectedOutput} for tc in module.testCases
                                 ]
@@ -347,21 +342,6 @@ class CourseAPI(Resource):
         except Exception as e:
             return make_response(jsonify({'error': 'Something went wrong', 'message': str(e)}), 500)
         
-
-# class YouTubeTranscriptAPI(Resource):
-#     def get(self):
-#         try:
-#             videoId = request.args.get('videoId')
-#             if not videoId:
-#                 return jsonify({"error": "Video ID is required"}), 400
-
-#             transcript = YouTubeTranscriptApi.get_transcript(videoId)
-#             return jsonify({"transcript": transcript})
-
-#         except Exception as e:
-#             return jsonify({"error": str(e)}), 500
-
-
 # Helper function to extract video ID from YouTube URL
 def extract_video_id(video_url):
     """
@@ -434,75 +414,66 @@ class ChatbotInteractionAPI(Resource):
             data = request.get_json()
             query = data.get("query")
             history = data.get("history")
+            email = data.get("email")
             moduleId = data.get("moduleId")
-            # userEmail = data.get("userEmail")  # Use email instead of ID
-
-            # Validate input
+            
+            user = User.objects(email=email).first()
+            if not user:
+                return {"error": "User not found"}, 404
+            
             if not query or not history:
                 return {"error": "Query and history are required"}, 400
+            
+            # Extracting the last question from history
+            question = history[-1]['text']
+            
+            # Retrieve the module based on moduleId
+            module = Module.objects(id=moduleId).first()
+            
+            # Look for existing ChatQuestions entry for the same user, date, course, and week
+            existing_question_entry = ChatQuestions.objects(
+                user=user,
+                date=datetime.now().date(),
+                course=module.week.course,
+                week=module.week
+            ).first()
 
+            # If an entry exists, append the new question to the existing array of questions
+            if existing_question_entry:
+                existing_question_entry.update(push__questions=question)
+                # return {"message": "Question added to existing entry"}, 200
+            else:
+                # If no entry exists, create a new entry
+                new_question_entry = ChatQuestions(
+                    user=user, 
+                    week=module.week,
+                    course=module.week.course,
+                    date=datetime.now().date(),
+                    questions=[question],  # Initialize with the current question
+                )
+                new_question_entry.save()
+                # return {"message": "New question entry created"}, 201
+
+            # Optionally, you could also handle the response from an external service
             data = {
                 'query' : query,
                 'history' : process_history(history),
                 'prompt_option' : get_module_type(moduleId)
             }
             
-            response = requests.post(os.getenv("RAG_API") + "/ask", json = data)
+            response = requests.post(os.getenv("RAG_API") + "/ask", json=data)
 
             # Check the status code and the response
             if response.status_code == 200:
-                print("Request was successful!")
-                print("Response:", response.json())  # Assuming the response is JSON
-                return response.json(),200
+                return response.json(), 200
             else:
-                print(f"Request failed with status code {response.status_code}")
-                print("Error response:", response.text)
                 return response.text, response.status_code
-            # # Fetch the user from the database using their email
-            # user = User.objects(email=userEmail).first()
-            # if not user:
-            #     return {"error": "User not found"}, 404
-
-            # # Fetch chat history only if sessionId is present
-            # chatHistory = []
-            # if sessionId:
-            #     chatHistory = ChatHistory.objects(sessionId=sessionId).order_by('timestamp')
-
-            # # Simulate API response
-            # responseText = "RAG API response based on history"
-
-            # # Save the new chat entry in the database
-            # chatEntry = ChatHistory(
-            #     sessionId=sessionId,
-            #     user=user,  # Associate the chat with the user
-            #     query=query,
-            #     response=responseText
-            # )
-            # chatEntry.save()
-
-            # # Prepare response data ensuring it is serializable
-            # response = {
-            #     "sessionId": sessionId,
-            #     "question": query,
-            #     "answer": responseText,
-            #     "chatHistory": [
-            #         {
-            #             "query": chat.query,
-            #             "answer": chat.response,
-            #             "timestamp": chat.timestamp.isoformat(),  # Convert datetime to string
-            #             "user": self.serialize_user(chat.user)  # Serialize the user reference
-            #         }
-            #         for chat in chatHistory
-            #     ]
-            # }
-
-            # # Return the response directly (no need for jsonify)
-            # return response, 200
-
+            
         except Exception as e:
             # Return error with details
             return {"error": "Something went wrong", "message": str(e)}, 500
 
+        
     def serialize_user(self, user):
         # Serialize the user object
         if user:
@@ -515,7 +486,47 @@ class ChatbotInteractionAPI(Resource):
             }
         return None
 
+class FetchWeekwiseQuestionsAPI(Resource):
+    def get(self):
+        try:
+            # Get query parameter for the course
+            module = request.args.get('module')
+            course = Module.objects(id=module).first().week.course
+            
+            # Ensure the 'course' parameter is provided
+            if not course:
+                return {"error": "Course is required"}, 400
+            
+            # Retrieve all ChatQuestions that match the given course
+            questions = ChatQuestions.objects(course=course)
+            
+            if not questions:
+                return {"message": "No questions found for the given course"}, 404
+            
+            # Group questions by week
+            weekwise_questions = {}
+            
+            for question_entry in questions:
+                week = question_entry.week
+                if week not in weekwise_questions:
+                    weekwise_questions[week] = []
+                
+                # Append the questions for each week
+                weekwise_questions[week].extend(question_entry.questions)
+            
+            # Prepare the result to return, sorted by week
+            result = []
+            for week, questions_list in sorted(weekwise_questions.items()):
+                result.append({
+                    'week': week,
+                    'questions': questions_list
+                })
+            
+            return {"weekwise_questions": result}, 200
 
+        except Exception as e:
+            # Return error if something went wrong
+            return {"error": "Something went wrong", "message": str(e)}, 500
 
 class UserStatisticsAPI(Resource):
     def get(self, userId):
@@ -584,7 +595,6 @@ class RunCodeAPI(Resource):
         except Exception as e:
             return {"error": "Something went wrong", "message": str(e)}, 500
 
-
 class AdminStatisticsAPI(Resource):
     def get(self):
         try:
@@ -599,8 +609,6 @@ class AdminStatisticsAPI(Resource):
         except Exception as e:
             return {"error": "Something went wrong", "message": str(e)}, 500
         
-
-
 @course_bp.route('/submit/code', methods=['POST'])
 def submit_code():
     """
@@ -711,6 +719,50 @@ def submit_code():
             "totalTestCases": len(test_cases),  # Total number of test cases
             "results": results
         }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+@course_bp.route('/debug/code', methods=['POST'])
+def debug_code():
+    """
+    API endpoint to debug code submissions.
+    Expects JSON payload with:
+    - email: Email of the user submitting the code
+    - moduleId: ID of the module (coding problem)
+    - code: The submitted code as a string
+    """
+    try:
+        # Parse the request data
+        data = request.get_json()
+        email = data.get('email')
+        module_id = data.get('moduleId')
+        submitted_code = data.get('code')
+
+        if not email or not module_id or not submitted_code:
+            return jsonify({"error": "Missing required fields (email, moduleId, code)"}), 400
+
+        # Fetch the user from the database using email
+        user = User.objects(email=email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Fetch the module (coding problem) from the database
+        module = Module.objects(id=module_id).first()
+        if not module or module.type != "coding":
+            return jsonify({"error": "Invalid module or module is not a coding problem"}), 404
+
+        response = requests.post(os.getenv("RAG_API") + "/debug/code", json={
+            "question": module.description,
+            "code": submitted_code
+        })
+
+        # Check if the RAG API responded successfully
+        if response.status_code == 200:
+            return jsonify(response.json()), 200
+        else:
+            # If the RAG API response was not successful, return the error response from RAG API
+            return jsonify({"error": "Failed to debug code", "message": response.text}), response.status_code
 
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
