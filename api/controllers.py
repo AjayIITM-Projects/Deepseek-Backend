@@ -721,8 +721,53 @@ def submit_code():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
+# @course_bp.route('/debug/code', methods=['POST'])
+# def debug_code():
+#     """
+#     API endpoint to debug code submissions.
+#     Expects JSON payload with:
+#     - email: Email of the user submitting the code
+#     - moduleId: ID of the module (coding problem)
+#     - code: The submitted code as a string
+#     """
+#     try:
+#         # Parse the request data
+#         data = request.get_json()
+#         email = data.get('email')
+#         module_id = data.get('moduleId')
+#         submitted_code = data.get('code')
+
+#         if not email or not module_id or not submitted_code:
+#             return jsonify({"error": "Missing required fields (email, moduleId, code)"}), 400
+
+#         # Fetch the user from the database using email
+#         user = User.objects(email=email).first()
+#         if not user:
+#             return jsonify({"error": "User not found"}), 404
+
+#         # Fetch the module (coding problem) from the database
+#         module = Module.objects(id=module_id).first()
+#         if not module or module.type != "coding":
+#             return jsonify({"error": "Invalid module or module is not a coding problem"}), 404
+
+#         response = requests.post(os.getenv("RAG_API") + "/debug/code", json={
+#             "question": module.description,
+#             "code": submitted_code
+#         })
+
+#         # Check if the RAG API responded successfully
+#         if response.status_code == 200:
+#             return jsonify(response.json()), 200
+#         else:
+#             # If the RAG API response was not successful, return the error response from RAG API
+#             return jsonify({"error": "Failed to debug code", "message": response.text}), response.status_code
+
+#     except Exception as e:
+#         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+
+
 @course_bp.route('/debug/code', methods=['POST'])
-def debug_code():
+def debug_code2():
     """
     API endpoint to debug code submissions.
     Expects JSON payload with:
@@ -749,10 +794,28 @@ def debug_code():
         module = Module.objects(id=module_id).first()
         if not module or module.type != "coding":
             return jsonify({"error": "Invalid module or module is not a coding problem"}), 404
+        
 
-        response = requests.post(os.getenv("RAG_API") + "/debug/code", json={
-            "question": module.description,
-            "code": submitted_code
+        debug_prompt = f"""
+You are 'Alfred', an expert Python programmer and debugging assistant.
+Analyze the provided Python code and identify any errors or issues.
+Respond with a concise explanation in **two lines only**.
+
+**Code:** {submitted_code}
+
+**Question:** {module.description}
+"""
+        
+        response = requests.post("https://api.groq.com/openai/v1/chat/completions", json={
+            "model": "llama-3.3-70b-versatile",
+            "messages": [{
+                "role": "user",
+                "content": debug_prompt
+            }]
+        },
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}"
         })
 
         # Check if the RAG API responded successfully
