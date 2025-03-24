@@ -10,6 +10,7 @@ import os
 import requests
 import subprocess
 import sys
+from mongoengine.errors import DoesNotExist
 
 def process_history(history):
     # Remove the first entry of the history
@@ -488,8 +489,8 @@ class FetchWeekwiseQuestionsAPI(Resource):
     def get(self):
         try:
             # Get query parameter for the course
-            module = request.args.get('module')
-            course = Module.objects(id=module).first().week.course
+            courseId = request.args.get('courseId')
+            course = Course.objects(id=courseId).first()
             
             # Ensure the 'course' parameter is provided
             if not course:
@@ -827,3 +828,56 @@ Respond with a concise explanation in **two lines only**.
 
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
+    
+
+
+
+@course_bp.route('/dashboard/user/questions', methods=['GET'])
+def get_coursewise_questions():
+    try:
+        # Get user email from request
+        user_email = request.args.get('email') or request.json.get('email')
+        
+        if not user_email:
+            return jsonify({'error': 'Email is required'}), 400
+        
+        # Get the user object
+        user = User.objects.get(email=user_email)
+        
+        # Query all ChatQuestions for this user, sorted by date descending
+        chat_questions = ChatQuestions.objects(user=user).order_by('-date')
+        
+        # Dictionary to group by course
+        courses = {}
+        
+        for cq in chat_questions:
+            course_id = str(cq.course.id)
+            
+            if course_id not in courses:
+                courses[course_id] = {
+                    'course_name': cq.course.name,
+                    'questions': []
+                }
+            
+            # Add all questions with their dates
+            for question in cq.questions:
+                courses[course_id]['questions'].append({
+                    'question': question,
+                    'date': cq.date.isoformat()
+                })
+        
+        # Sort questions within each course by date descending
+        for course in courses.values():
+            course['questions'].sort(key=lambda x: x['date'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'data': courses
+        })
+        
+    except DoesNotExist:
+        return jsonify({'error': 'User not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
