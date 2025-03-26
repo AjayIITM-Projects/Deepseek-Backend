@@ -73,9 +73,8 @@ class Login(Resource):
                 )
                 user.save()
             
-            # Flask session creation to store user info
-            session['userId'] = str(user.id)  # Store the user ID in the session
-
+            user.lastLogin = datetime.now()
+            user.save()
             return make_response(jsonify({
                 'message': 'Login successful',
                 'userId': str(user.id),  # Changed user_id to userId
@@ -83,6 +82,7 @@ class Login(Resource):
                 'email': user.email,
                 'name': user.name,
                 'picture': user.profilePictureUrl,
+                'lastLogin': user.lastLogin
             }), 200)
         except Exception as e:
             return make_response(jsonify({"error": "Something went wrong", "message": str(e)}), 500)

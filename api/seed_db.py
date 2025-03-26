@@ -55,31 +55,31 @@ def seed_database():
         Week.objects.delete()
         Module.objects.delete()
 
-        # Create a sample user
-        hashed_password = bcrypt.generate_password_hash("password123").decode('utf-8')
-        user1 = User(
-            role="admin",
-            email="admin@example.com",
-            name="Admin User",
-            profilePictureUrl="DP:)"
-        )
-        user1.save()
+        # # Create a sample user
+        # hashed_password = bcrypt.generate_password_hash("password123").decode('utf-8')
+        # user1 = User(
+        #     role="admin",
+        #     email="admin@example.com",
+        #     name="Admin User",
+        #     profilePictureUrl="DP:)"
+        # )
+        # user1.save()
 
-        user2 = User(
-            role="student",
-            email="student@example.com",
-            name="Student User",
-            profilePictureUrl="DP:)"
-        )
-        user2.save()
+        # user2 = User(
+        #     role="student",
+        #     email="student@example.com",
+        #     name="Student User",
+        #     profilePictureUrl="DP:)"
+        # )
+        # user2.save()
 
-        user3 = User(
-            role="faculty",
-            email="faculty@example.com",
-            name="Faculty User",
-            profilePictureUrl="DP:)"
-        )
-        user3.save()
+        # user3 = User(
+        #     role="faculty",
+        #     email="faculty@example.com",
+        #     name="Faculty User",
+        #     profilePictureUrl="DP:)"
+        # )
+        # user3.save()
 
 
 
@@ -101,13 +101,209 @@ def seed_database():
         )
         course2.save()
 
-        # Create an announcement for Course 1 (MLF)
-        announcement1 = Announcement(course=course1, message="Welcome to the Machine Learning Fundamentals course!")
-        announcement1.save()
+        # =============================================
+        # MLF Course Announcements
+        # =============================================
 
-        # Create an announcement for Course 2 (PDSA)
-        announcement2 = Announcement(course=course2, message="Welcome to the Problem Solving and Data Structures Algorithms course!")
-        announcement2.save()
+        # Welcome announcement - Jan 23
+        Announcement(
+            course=course1,
+            message="Welcome to Machine Learning Fundamentals (MLF)! We're excited to have you in this course.",
+            date=datetime(2025, 1, 23, 9, 0)
+        ).save()
+
+        # Week -1 Released - Jan 23
+        Announcement(
+            course=course1,
+            message="Week -1: Course Orientation materials are now available. Please review them before Week 1 begins.",
+            date=datetime(2025, 1, 23, 10, 0)
+        ).save()
+
+        # Week 1 Released - Jan 23
+        Announcement(
+            course=course1,
+            message="Week 1: Introduction to Machine Learning materials are now available!",
+            date=datetime(2025, 1, 23, 11, 0)
+        ).save()
+
+        # Week 1 Assignment Due Reminder - Feb 2 (10 days after Week 1 release)
+        Announcement(
+            course=course1,
+            message="REMINDER: Week 1 assignments are due tomorrow (Feb 3)!",
+            date=datetime(2025, 2, 2, 18, 0)
+        ).save()
+
+        # Week 2 Released - Jan 30 (7 days after Week 1)
+        Announcement(
+            course=course1,
+            message="Week 2: Continuity, Differentiability, and Linear Approximation materials are now available!",
+            date=datetime(2025, 1, 30, 9, 0)
+        ).save()
+
+        # Week 2 Assignment Due Reminder - Feb 9
+        Announcement(
+            course=course1,
+            message="REMINDER: Week 2 assignments are due tomorrow (Feb 10)!",
+            date=datetime(2025, 2, 9, 18, 0)
+        ).save()
+
+        # Week 3 Released - Feb 6
+        Announcement(
+            course=course1,
+            message="Week 3: Multivariate Calculus materials are now available!",
+            date=datetime(2025, 2, 6, 9, 0)
+        ).save()
+
+        # Week 3 Assignment Due Reminder - Feb 16
+        Announcement(
+            course=course1,
+            message="REMINDER: Week 3 assignments are due tomorrow (Feb 17)!",
+            date=datetime(2025, 2, 16, 18, 0)
+        ).save()
+
+        # Week 4 Released - Feb 13
+        Announcement(
+            course=course1,
+            message="Week 4: Probability Basics materials are now available!",
+            date=datetime(2025, 2, 13, 9, 0)
+        ).save()
+
+        # Week 4 Assignment Due Reminder - Feb 23
+        Announcement(
+            course=course1,
+            message="REMINDER: Week 4 assignments are due tomorrow (Feb 24)!",
+            date=datetime(2025, 2, 23, 18, 0)
+        ).save()
+
+        # Week 5 Released - Feb 20
+        Announcement(
+            course=course1,
+            message="Week 5: Linear Regression materials are now available!",
+            date=datetime(2025, 2, 20, 9, 0)
+        ).save()
+
+        # Week 5 Assignment Due Reminder - Mar 2
+        Announcement(
+            course=course1,
+            message="REMINDER: Week 5 assignments are due tomorrow (Mar 3)!",
+            date=datetime(2025, 3, 2, 18, 0)
+        ).save()
+
+        # Week 6 Released - Feb 27
+        Announcement(
+            course=course1,
+            message="Week 6: Logistic Regression materials are now available!",
+            date=datetime(2025, 2, 27, 9, 0)
+        ).save()
+
+        # Week 6 Assignment Due Reminder - Mar 9
+        Announcement(
+            course=course1,
+            message="FINAL REMINDER: Week 6 assignments are due tomorrow (Mar 10)! This is your last submission for the course.",
+            date=datetime(2025, 3, 9, 18, 0)
+        ).save()
+
+        # =============================================
+        # PDSA Course Announcements
+        # =============================================
+
+        # Welcome announcement - Jan 23
+        Announcement(
+            course=course2,
+            message="Welcome to Problem Solving and Data Structures Algorithms (PDSA)! Let's build strong coding fundamentals together.",
+            date=datetime(2025, 1, 23, 9, 30)
+        ).save()
+
+        # Week -1 Released - Jan 23
+        Announcement(
+            course=course2,
+            message="Week -1: Course Orientation materials are now available. Please review the syllabus and setup your development environment.",
+            date=datetime(2025, 1, 23, 10, 30)
+        ).save()
+
+        # Week 1 Released - Jan 23
+        Announcement(
+            course=course2,
+            message="Week 1: Python Recap and Sorting Algorithms materials are now available!",
+            date=datetime(2025, 1, 23, 11, 30)
+        ).save()
+
+        # Week 1 Assignment Due Reminder - Feb 2
+        Announcement(
+            course=course2,
+            message="REMINDER: Week 1 coding assignments are due tomorrow (Feb 3)! Don't forget to test your solutions thoroughly.",
+            date=datetime(2025, 2, 2, 18, 30)
+        ).save()
+
+        # Week 2 Released - Jan 30
+        Announcement(
+            course=course2,
+            message="Week 2: Searching and Sorting Algorithms materials are now available!",
+            date=datetime(2025, 1, 30, 9, 30)
+        ).save()
+
+        # Week 2 Assignment Due Reminder - Feb 9
+        Announcement(
+            course=course2,
+            message="REMINDER: Week 2 assignments (including Binary Search implementation) are due tomorrow (Feb 10)!",
+            date=datetime(2025, 2, 9, 18, 30)
+        ).save()
+
+        # Week 3 Released - Feb 6
+        Announcement(
+            course=course2,
+            message="Week 3: Trees and Graphs materials are now available! This is an important week for interview preparation.",
+            date=datetime(2025, 2, 6, 9, 30)
+        ).save()
+
+        # Week 3 Assignment Due Reminder - Feb 16
+        Announcement(
+            course=course2,
+            message="REMINDER: Week 3 assignments (including BFS implementation) are due tomorrow (Feb 17)!",
+            date=datetime(2025, 2, 16, 18, 30)
+        ).save()
+
+        # Week 4 Released - Feb 13
+        Announcement(
+            course=course2,
+            message="Week 4: Dynamic Programming materials are now available! Start early as these concepts take time to master.",
+            date=datetime(2025, 2, 13, 9, 30)
+        ).save()
+
+        # Week 4 Assignment Due Reminder - Feb 23
+        Announcement(
+            course=course2,
+            message="REMINDER: Week 4 DP assignments are due tomorrow (Feb 24)! Don't procrastinate on these challenging problems.",
+            date=datetime(2025, 2, 23, 18, 30)
+        ).save()
+
+        # Week 5 Released - Feb 20
+        Announcement(
+            course=course2,
+            message="Week 5: Greedy Algorithms materials are now available!",
+            date=datetime(2025, 2, 20, 9, 30)
+        ).save()
+
+        # Week 5 Assignment Due Reminder - Mar 2
+        Announcement(
+            course=course2,
+            message="REMINDER: Week 5 assignments (Activity Selection Problem) are due tomorrow (Mar 3)!",
+            date=datetime(2025, 3, 2, 18, 30)
+        ).save()
+
+        # Week 6 Released - Feb 27
+        Announcement(
+            course=course2,
+            message="Week 6: Advanced Topics materials are now available! This concludes our regular course content.",
+            date=datetime(2025, 2, 27, 9, 30)
+        ).save()
+
+        # Week 6 Assignment Due Reminder - Mar 9
+        Announcement(
+            course=course2,
+            message="FINAL REMINDER: Week 6 assignments are due tomorrow (Mar 10)! Submit all outstanding work before the deadline.",
+            date=datetime(2025, 3, 9, 18, 30)
+        ).save()
 
         # Create Week 1 for Course 1 (MLF)
         week1_mlf = Week(course=course1, title="Week 1: Introduction to Machine Learning", deadline=datetime(2025, 2, 10))
@@ -513,32 +709,128 @@ def seed_database():
         ).save()
 
 
-        # -----------------------------
-        # Seeding ChatHistory
-        # -----------------------------
-        chat1 = ChatHistory(
-            sessionId="session123",
-            user=user1,
-            query="How do I define a function in Python?",
-            response="Use the def keyword followed by the function name and parameters."
-        ).save()
+        # # -----------------------------
+        # # Seeding ChatHistory
+        # # -----------------------------
+        # chat1 = ChatHistory(
+        #     sessionId="session123",
+        #     user=user1,
+        #     query="How do I define a function in Python?",
+        #     response="Use the def keyword followed by the function name and parameters."
+        # ).save()
 
 
-        # -----------------------------
-        # Seeding Code Submissions
-        # -----------------------------
-        code_submission1 = CodeSubmission(
-            user=user1,
-            question=None,  # Placeholder since Question is embedded
-            submittedCode="def add(a, b): return a + b",
-            output="5",
-            isCorrect=True
-        ).save()
+        # # -----------------------------
+        # # Seeding Code Submissions
+        # # -----------------------------
+        # code_submission1 = CodeSubmission(
+        #     user=user1,
+        #     question=None,  # Placeholder since Question is embedded
+        #     submittedCode="def add(a, b): return a + b",
+        #     output="5",
+        #     isCorrect=True
+        # ).save()
+
+
+
+
+        # =============================================
+        # MLF Course Weeks 3-6
+        # =============================================
+
+        # Week 3 MLF: Multivariate Calculus
+        week3_mlf = Week(course=course1, title="Week 3: Multivariate Calculus", deadline=datetime(2025, 2, 24)).save()
+        Module(week=week3_mlf, title="3.1 – Partial Derivatives", type="video", url="https://www.youtube.com/embed/JAf_aSIJryg").save()
+        Module(week=week3_mlf, title="3.2 – Gradient and Directional Derivatives", type="video", url="https://www.youtube.com/embed/tDPp5uWSIiU").save()
+        Module(week=week3_mlf, title="3.3 – Hessian Matrix", type="video", url="https://www.youtube.com/embed/q4pgxZfW0a4").save()
+        Module(week=week3_mlf, title="Practice Quiz", type="assignment", isGraded=False, questions=[
+            Question(question="What does the gradient vector represent?", type="mcq",
+                    options=["Direction of steepest ascent", "Direction of steepest descent", "Both A and B", "Neither"],
+                    correctAnswer="Direction of steepest ascent")
+        ]).save()
+
+        # Week 4 MLF: Probability Basics
+        week4_mlf = Week(course=course1, title="Week 4: Probability Basics", deadline=datetime(2025, 3, 3)).save()
+        Module(week=week4_mlf, title="4.1 – Random Variables", type="video", url="https://www.youtube.com/embed/3v9w79NhsfI").save()
+        Module(week=week4_mlf, title="4.2 – Probability Distributions", type="video", url="https://www.youtube.com/embed/OprNqnHsVIA").save()
+        Module(week=week4_mlf, title="4.3 – Bayes Theorem", type="video", url="https://www.youtube.com/embed/HZGCoVF3YvM").save()
+        Module(week=week4_mlf, title="Graded Quiz", type="assignment", isGraded=True, questions=[
+            Question(question="Which distribution is used for modeling binary outcomes?", type="mcq",
+                    options=["Normal", "Poisson", "Bernoulli", "Uniform"],
+                    correctAnswer="Bernoulli")
+        ]).save()
+
+        # Week 5 MLF: Linear Regression
+        week5_mlf = Week(course=course1, title="Week 5: Linear Regression", deadline=datetime(2025, 3, 10)).save()
+        Module(week=week5_mlf, title="5.1 – Simple Linear Regression", type="video", url="https://www.youtube.com/embed/nk2CQITm_eo").save()
+        Module(week=week5_mlf, title="5.2 – Multiple Linear Regression", type="video", url="https://www.youtube.com/embed/zITIFTsivN8").save()
+        Module(week=week5_mlf, title="5.3 – Regularization", type="video", url="https://www.youtube.com/embed/NGf0voTMlcs").save()
+        Module(week=week5_mlf, title="Graded Programming", type="coding", language="Python",
+              description="Implement linear regression from scratch",
+              testCases=[TestCase(inputData="[[1,2],[3,4]]", expectedOutput="[1.0, 1.0]")]).save()
+
+        # Week 6 MLF: Logistic Regression
+        week6_mlf = Week(course=course1, title="Week 6: Logistic Regression", deadline=datetime(2025, 3, 17)).save()
+        Module(week=week6_mlf, title="6.1 – Classification Problems", type="video", url="https://www.youtube.com/embed/yIYKR4sgzI8").save()
+        Module(week=week6_mlf, title="6.2 – Logistic Function", type="video", url="https://www.youtube.com/embed/BfKanl1aSG0").save()
+        Module(week=week6_mlf, title="6.3 – Model Evaluation", type="video", url="https://www.youtube.com/embed/OAl6eAyP-yo").save()
+        Module(week=week6_mlf, title="Final Quiz", type="assignment", isGraded=True, questions=[
+            Question(question="What is the range of logistic function?", type="mcq",
+                    options=["(0,1)", "(-∞,∞)", "[0,1]", "(0,1]"],
+                    correctAnswer="(0,1)")
+        ]).save()
+
+
+
+
+
+        # =============================================
+        # PDSA Course Weeks 3-6
+        # =============================================
+
+        # Week 3 PDSA: Trees and Graphs
+        week3_pdsa = Week(course=course2, title="Week 3: Trees and Graphs", deadline=datetime(2025, 2, 24)).save()
+        Module(week=week3_pdsa, title="3.1 – Binary Trees", type="video", url="https://www.youtube.com/embed/fAAZixBzIAI").save()
+        Module(week=week3_pdsa, title="3.2 – Graph Representations", type="video", url="https://www.youtube.com/embed/09_LlHjoEiY").save()
+        Module(week=week3_pdsa, title="3.3 – Tree Traversals", type="video", url="https://www.youtube.com/embed/WLvU5EQVZqY").save()
+        Module(week=week3_pdsa, title="Graded Programming", type="coding", language="Python",
+              description="Implement BFS for a graph",
+              testCases=[TestCase(inputData="adjacency_list", expectedOutput="[0,1,2,3]")]).save()
+
+        # Week 4 PDSA: Dynamic Programming
+        week4_pdsa = Week(course=course2, title="Week 4: Dynamic Programming", deadline=datetime(2025, 3, 3)).save()
+        Module(week=week4_pdsa, title="4.1 – DP Introduction", type="video", url="https://www.youtube.com/embed/oBt53YbR9Kk").save()
+        Module(week=week4_pdsa, title="4.2 – Fibonacci Sequence", type="video", url="https://www.youtube.com/embed/vYquumk4nWw").save()
+        Module(week=week4_pdsa, title="4.3 – Knapsack Problem", type="video", url="https://www.youtube.com/embed/8LusJS5-AGo").save()
+        Module(week=week4_pdsa, title="Practice Quiz", type="assignment", isGraded=False, questions=[
+            Question(question="What is the time complexity of naive Fibonacci?", type="mcq",
+                    options=["O(n)", "O(2^n)", "O(n^2)", "O(log n)"],
+                    correctAnswer="O(2^n)")
+        ]).save()
+
+        # Week 5 PDSA: Greedy Algorithms
+        week5_pdsa = Week(course=course2, title="Week 5: Greedy Algorithms", deadline=datetime(2025, 3, 10)).save()
+        Module(week=week5_pdsa, title="5.1 – Greedy Paradigm", type="video", url="https://www.youtube.com/embed/ARvQcqJ_-NY").save()
+        Module(week=week5_pdsa, title="5.2 – Activity Selection", type="video", url="https://www.youtube.com/embed/poWB2UCuozA").save()
+        Module(week=week5_pdsa, title="5.3 – Huffman Coding", type="video", url="https://www.youtube.com/embed/co4_ahEDCho").save()
+        Module(week=week5_pdsa, title="Graded Programming", type="coding", language="Python",
+              description="Implement activity selection problem",
+              testCases=[TestCase(inputData="activities", expectedOutput="[1,3,5]")]).save()
+
+        # Week 6 PDSA: Advanced Topics
+        week6_pdsa = Week(course=course2, title="Week 6: Advanced Topics", deadline=datetime(2025, 3, 17)).save()
+        Module(week=week6_pdsa, title="6.1 – Tries", type="video", url="https://www.youtube.com/embed/AXjmTQ8LEoI").save()
+        Module(week=week6_pdsa, title="6.2 – Segment Trees", type="video", url="https://www.youtube.com/embed/2bSS8rtFym4").save()
+        Module(week=week6_pdsa, title="6.3 – Final Review", type="video", url="https://www.youtube.com/embed/p1EnSvS3urU").save()
+        Module(week=week6_pdsa, title="Final Exam", type="assignment", isGraded=True, questions=[
+            Question(question="Which data structure is best for prefix searches?", type="mcq",
+                    options=["Hash Table", "Binary Tree", "Trie", "Linked List"],
+                    correctAnswer="Trie")
+        ]).save()
 
 
         # Fetch all video-type modules and dynamically fetch their transcripts
         video_modules = Module.objects(type="video")
         fetch_and_save_transcripts(video_modules)
-
 
         print("Database seeded successfully!")

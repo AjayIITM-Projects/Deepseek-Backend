@@ -16,6 +16,7 @@ class User(Document):
     modulesCompleted = fields.ListField(fields.ReferenceField('Module'))  # Corrected to camelCase
     averageScore = fields.FloatField()  # Corrected to camelCase
     active = fields.BooleanField(default=True)  # Add the 'active' field
+    lastLogin = fields.DateTimeField(default=datetime.now(), required=True)
 
 # -----------------------------
 # Course Model
