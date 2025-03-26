@@ -699,15 +699,15 @@ def submit_code():
                 # Handle execution errors (e.g., runtime errors)
                 return jsonify({"error": f"Code execution failed: {str(e)}"}), 500
 
-        # Save the submission to the database
-        code_submission = CodeSubmission(
-            user=user,  # Reference to the User document
-            question=None,  # You can embed the question if needed
-            submittedCode=submitted_code,
-            output=str(results),  # Store the results as a string
-            isCorrect=all_passed
-        )
-        code_submission.save()
+        # # Save the submission to the database
+        # code_submission = CodeSubmission(
+        #     user=user,  # Reference to the User document
+        #     question=None,  # You can embed the question if needed
+        #     submittedCode=submitted_code,
+        #     output=str(results),  # Store the results as a string
+        #     isCorrect=all_passed
+        # )
+        # code_submission.save()
 
         # Update the user's attempted questions or modules if needed
         if module not in user.modulesCompleted:
@@ -725,51 +725,6 @@ def submit_code():
 
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
-# @course_bp.route('/debug/code', methods=['POST'])
-# def debug_code():
-#     """
-#     API endpoint to debug code submissions.
-#     Expects JSON payload with:
-#     - email: Email of the user submitting the code
-#     - moduleId: ID of the module (coding problem)
-#     - code: The submitted code as a string
-#     """
-#     try:
-#         # Parse the request data
-#         data = request.get_json()
-#         email = data.get('email')
-#         module_id = data.get('moduleId')
-#         submitted_code = data.get('code')
-
-#         if not email or not module_id or not submitted_code:
-#             return jsonify({"error": "Missing required fields (email, moduleId, code)"}), 400
-
-#         # Fetch the user from the database using email
-#         user = User.objects(email=email).first()
-#         if not user:
-#             return jsonify({"error": "User not found"}), 404
-
-#         # Fetch the module (coding problem) from the database
-#         module = Module.objects(id=module_id).first()
-#         if not module or module.type != "coding":
-#             return jsonify({"error": "Invalid module or module is not a coding problem"}), 404
-
-#         response = requests.post(os.getenv("RAG_API") + "/debug/code", json={
-#             "question": module.description,
-#             "code": submitted_code
-#         })
-
-#         # Check if the RAG API responded successfully
-#         if response.status_code == 200:
-#             return jsonify(response.json()), 200
-#         else:
-#             # If the RAG API response was not successful, return the error response from RAG API
-#             return jsonify({"error": "Failed to debug code", "message": response.text}), response.status_code
-
-#     except Exception as e:
-#         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
-
 
 @course_bp.route('/debug/code', methods=['POST'])
 def debug_code2():
@@ -834,8 +789,6 @@ Respond with a concise explanation in **two lines only**.
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
     
 
-
-
 @course_bp.route('/dashboard/user/questions', methods=['GET'])
 def get_coursewise_questions():
     try:
@@ -885,3 +838,75 @@ def get_coursewise_questions():
         return jsonify({'error': str(e)}), 500
     
 
+@course_bp.route('/top-questions', methods=['POST'])
+def get_top_questions():
+    """
+    API endpoint to debug code submissions.
+    Expects JSON payload with:
+    - email: Email of the user submitting the code
+    - moduleId: ID of the module (coding problem)
+    - code: The submitted code as a string
+    """
+    try:
+        # Parse the request data
+        data = request.get_json()
+        email = data.get('email')
+        courseId = data.get('courseId')
+
+        if not email or not courseId:
+            return jsonify({"error": "Missing required fields (email, courseId)"}), 400
+
+        # Fetch the user from the database using email
+        user = User.objects(email=email).first()
+        if not user or user.role != "instructor":
+            return jsonify({"error": "User not found"}), 404
+
+        # Fetch the module (coding problem) from the database
+        course = Course.objects(id=courseId).first()
+        if not course:
+            return jsonify({"error": "Invalid courseId"}), 404
+        
+        questions = ChatQuestions.objects(course=course).all()
+        all_questions = []
+        for question in questions:
+            all_questions.extend(question.questions)
+        
+        
+        prompt = f"""
+Analyze these programming questions and return the top 5 most frequent topics. Respond with ONLY a Python list literal containing exactly 5 unquoted items separated by commas, formatted exactly like this example:
+Python functions, Lists, Error handling, OOP, File handling
+STRICT REQUIREMENTS: "
+1. No quotation marks of any kind
+2. No backslashes or escape characters
+3. No counts or numbering
+4. No additional text or commentary
+5. Exactly 5 comma-separated
+6. Each topic must be 2-4 words in lowercase/uppercase
+If you include any quotes, backslashes, or other formatting, the response is wrong.\n\n
+QUESTIONS: {"\n - ".join(all_questions)}
+"""
+        
+        response = requests.post("https://api.groq.com/openai/v1/chat/completions", json={
+            "model": "llama-3.3-70b-versatile",
+            "messages": [{
+                "role": "user",
+                "content": prompt
+            }]
+        },
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {os.getenv('GROQ_API_KEY')}"
+        })
+
+        # Check if the RAG API responded successfully
+        if response.status_code == 200:
+            return jsonify({
+                "allQuestions" : all_questions,
+                "topQuestions" : response.json()["choices"][0]["message"]["content"].split(", ")
+                }), 200
+        else:
+            # If the RAG API response was not successful, return the error response from RAG API
+            return jsonify({"error": "Failed to get hot topics", "message": response.text}), response.status_code
+
+    except Exception as e:
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
