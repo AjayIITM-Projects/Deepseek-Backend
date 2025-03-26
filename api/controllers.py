@@ -11,6 +11,10 @@ import requests
 import subprocess
 import sys
 from mongoengine.errors import DoesNotExist
+import pytz
+
+# Define the IST timezone
+ist = pytz.timezone('Asia/Kolkata')
 
 def process_history(history):
     # Remove the first entry of the history
@@ -73,7 +77,7 @@ class Login(Resource):
                 )
                 user.save()
             
-            user.lastLogin = datetime.now()
+            user.lastLogin = datetime.now(ist)
             user.save()
             return make_response(jsonify({
                 'message': 'Login successful',
