@@ -1,5 +1,10 @@
 from mongoengine import Document, EmbeddedDocument, fields, connect, CASCADE
 from datetime import datetime
+import pytz
+
+# Define the IST timezone
+ist = pytz.timezone('Asia/Kolkata')
+
 
 
 # -----------------------------
@@ -16,7 +21,7 @@ class User(Document):
     modulesCompleted = fields.ListField(fields.ReferenceField('Module'))  # Corrected to camelCase
     averageScore = fields.FloatField()  # Corrected to camelCase
     active = fields.BooleanField(default=True)  # Add the 'active' field
-    lastLogin = fields.DateTimeField(default=datetime.now(), required=True)
+    lastLogin = fields.DateTimeField(default=datetime.now(ist), required=True)
 
 # -----------------------------
 # Course Model
@@ -35,7 +40,7 @@ class Course(Document):
 class Announcement(Document):
     course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
     message = fields.StringField(required=True, max_length=500)
-    date = fields.DateTimeField(default=datetime.now)
+    date = fields.DateTimeField(default=datetime.now(ist))
 
 # -----------------------------
 # Week Model
@@ -98,7 +103,7 @@ class ChatHistory(Document):
     user = fields.ReferenceField('User', required=True, reverse_delete_rule=CASCADE)
     query = fields.StringField(required=True, max_length=500)
     response = fields.StringField(required=True, max_length=1000)
-    timestamp = fields.DateTimeField(default=datetime.now)
+    timestamp = fields.DateTimeField(default=datetime.now(ist))
 
     
 class ChatQuestions(Document):
@@ -121,7 +126,7 @@ class CodeSubmission(Document):
 class VideoTranscript(Document):
     videoID = fields.StringField(required=True, max_length=50, unique=True)  # Unique YouTube video ID
     transcript = fields.ListField(fields.DictField(), required=True)  # Store transcript as a list of dictionaries
-    fetched_at = fields.DateTimeField(default=datetime.now)  # Timestamp for when the transcript was fetched
+    fetched_at = fields.DateTimeField(default=datetime.now(ist))  # Timestamp for when the transcript was fetched
 
     meta = {
         'collection': 'video_transcripts',  # Explicit collection name in MongoDB
