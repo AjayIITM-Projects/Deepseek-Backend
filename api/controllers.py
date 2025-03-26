@@ -11,10 +11,10 @@ import requests
 import subprocess
 import sys
 from mongoengine.errors import DoesNotExist
-import pytz
 
-# Define the IST timezone
-ist = pytz.timezone('Asia/Kolkata')
+
+def get_ist_time():
+    return datetime.now() + timedelta(hours=5, minutes=30)
 
 def process_history(history):
     # Remove the first entry of the history
@@ -77,7 +77,7 @@ class Login(Resource):
                 )
                 user.save()
             
-            user.lastLogin = datetime.now(ist)
+            user.lastLogin = get_ist_time()
             user.save()
             return make_response(jsonify({
                 'message': 'Login successful',
@@ -436,7 +436,7 @@ class ChatbotInteractionAPI(Resource):
             # Look for existing ChatQuestions entry for the same user, date, course, and week
             existing_question_entry = ChatQuestions.objects(
                 user=user,
-                date=datetime.now(ist).date(),
+                date=get_ist_time().date(),
                 course=module.week.course,
                 week=module.week
             ).first()
@@ -451,7 +451,7 @@ class ChatbotInteractionAPI(Resource):
                     user=user, 
                     week=module.week,
                     course=module.week.course,
-                    date=datetime.now(ist).date(),
+                    date=get_ist_time().date(),
                     questions=[query],  # Initialize with the current question
                 )
                 new_question_entry.save()

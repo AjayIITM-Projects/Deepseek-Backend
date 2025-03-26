@@ -1,12 +1,8 @@
 from mongoengine import Document, EmbeddedDocument, fields, connect, CASCADE
-from datetime import datetime
-import pytz
+from datetime import datetime, timedelta
 
-# Define the IST timezone
-ist = pytz.timezone('Asia/Kolkata')
-
-
-
+def get_ist_time():
+    return datetime.now() + timedelta(hours=5, minutes=30)
 # -----------------------------
 # User Model
 # -----------------------------
@@ -21,7 +17,7 @@ class User(Document):
     modulesCompleted = fields.ListField(fields.ReferenceField('Module'))  # Corrected to camelCase
     averageScore = fields.FloatField()  # Corrected to camelCase
     active = fields.BooleanField(default=True)  # Add the 'active' field
-    lastLogin = fields.DateTimeField(default=datetime.now(ist), required=True)
+    lastLogin = fields.DateTimeField(default=get_ist_time(), required=True)
 
 # -----------------------------
 # Course Model
@@ -40,7 +36,7 @@ class Course(Document):
 class Announcement(Document):
     course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
     message = fields.StringField(required=True, max_length=500)
-    date = fields.DateTimeField(default=datetime.now(ist))
+    date = fields.DateTimeField(default=get_ist_time())
 
 # -----------------------------
 # Week Model
@@ -103,29 +99,21 @@ class ChatHistory(Document):
     user = fields.ReferenceField('User', required=True, reverse_delete_rule=CASCADE)
     query = fields.StringField(required=True, max_length=500)
     response = fields.StringField(required=True, max_length=1000)
-    timestamp = fields.DateTimeField(default=datetime.now(ist))
+    timestamp = fields.DateTimeField(default=get_ist_time())
 
     
 class ChatQuestions(Document):
     user = fields.ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
     course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
     week = fields.ReferenceField(Week, required=True, reverse_delete_rule=CASCADE)
-    date = fields.DateField(default=datetime.now(ist).date())
+    date = fields.DateField(default=get_ist_time().date())
     questions = fields.ListField(fields.StringField())
-    
 
-# class CodeSubmission(Document):
-#     user = fields.ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
-#     question = fields.EmbeddedDocumentField(Question)  #  Store question inside submission
-#     submittedCode = fields.StringField(required=True)
-#     output = fields.StringField()
-#     isCorrect = fields.BooleanField(default=False)
-#     timestamp = fields.DateTimeField(default=datetime.now(ist))
 
 class VideoTranscript(Document):
     videoID = fields.StringField(required=True, max_length=50, unique=True)  # Unique YouTube video ID
     transcript = fields.ListField(fields.DictField(), required=True)  # Store transcript as a list of dictionaries
-    fetched_at = fields.DateTimeField(default=datetime.now(ist))  # Timestamp for when the transcript was fetched
+    fetched_at = fields.DateTimeField(default=get_ist_time())  # Timestamp for when the transcript was fetched
 
     meta = {
         'collection': 'video_transcripts',  # Explicit collection name in MongoDB
