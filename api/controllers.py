@@ -3,7 +3,7 @@ from flask import Blueprint, make_response, request, jsonify, session
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, unset_jwt_cookies
 from youtube_transcript_api import YouTubeTranscriptApi
-from api.models import User, Course, Announcement, Week, Module, TestCase, Question, VideoTranscript, ChatHistory, CodeSubmission, ChatQuestions # Import models
+from api.models import User, Course, Announcement, Week, Module, TestCase, Question, VideoTranscript, ChatHistory, ChatQuestions # Import models
 from bson import ObjectId
 import re
 import os
@@ -436,7 +436,7 @@ class ChatbotInteractionAPI(Resource):
             # Look for existing ChatQuestions entry for the same user, date, course, and week
             existing_question_entry = ChatQuestions.objects(
                 user=user,
-                date=datetime.now().date(),
+                date=datetime.now(ist).date(),
                 course=module.week.course,
                 week=module.week
             ).first()
@@ -451,7 +451,7 @@ class ChatbotInteractionAPI(Resource):
                     user=user, 
                     week=module.week,
                     course=module.week.course,
-                    date=datetime.now().date(),
+                    date=datetime.now(ist).date(),
                     questions=[query],  # Initialize with the current question
                 )
                 new_question_entry.save()

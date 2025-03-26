@@ -1,4 +1,4 @@
-from api.models import User, Course, VideoTranscript, Announcement, Week, Module, TestCase, Question, ChatHistory, CodeSubmission  # Import models
+from api.models import User, Course, VideoTranscript, Announcement, Week, Module, TestCase, Question, ChatHistory  # Import models
 from datetime import datetime
 import re
 from youtube_transcript_api import YouTubeTranscriptApi

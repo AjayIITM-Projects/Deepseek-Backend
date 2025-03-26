@@ -110,18 +110,17 @@ class ChatQuestions(Document):
     user = fields.ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
     course = fields.ReferenceField(Course, required=True, reverse_delete_rule=CASCADE)
     week = fields.ReferenceField(Week, required=True, reverse_delete_rule=CASCADE)
-    date = fields.DateField(default=datetime.now().date())
+    date = fields.DateField(default=datetime.now(ist).date())
     questions = fields.ListField(fields.StringField())
     
 
-class CodeSubmission(Document):
-    user = fields.ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
-    question = fields.EmbeddedDocumentField(Question)  #  Store question inside submission
-    submittedCode = fields.StringField(required=True)
-    output = fields.StringField()
-    isCorrect = fields.BooleanField(default=False)
-    timestamp = fields.DateTimeField(default=datetime.now)
-
+# class CodeSubmission(Document):
+#     user = fields.ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
+#     question = fields.EmbeddedDocumentField(Question)  #  Store question inside submission
+#     submittedCode = fields.StringField(required=True)
+#     output = fields.StringField()
+#     isCorrect = fields.BooleanField(default=False)
+#     timestamp = fields.DateTimeField(default=datetime.now(ist))
 
 class VideoTranscript(Document):
     videoID = fields.StringField(required=True, max_length=50, unique=True)  # Unique YouTube video ID

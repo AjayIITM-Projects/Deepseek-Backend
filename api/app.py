@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager
 from flask_restful import Api
 from mongoengine import connect, disconnect, get_db
 from api.controllers import *  # Import controllers
-from api.models import User, Course, Announcement, Week, Module, TestCase, Question, CodeSubmission, ChatHistory  # Import models
+from api.models import User, Course, Announcement, Week, Module, TestCase, Question, ChatHistory  # Import models
 from dotenv import load_dotenv
 import os
 from api.seed_db import seed_database
@@ -81,5 +81,4 @@ app.register_blueprint(user_bp)
 
 if __name__ == '__main__':
     # seed_database()
-    # requests.get(os.getenv("RAG_API"))
     app.run(debug=True)
